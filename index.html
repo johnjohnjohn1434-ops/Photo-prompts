@@ -50,11 +50,12 @@
         .like-btn:active .heart-icon { transform: scale(1.4); }
         
         /* Strict One Like Active State */
-        .like-btn.liked { background: rgba(255, 59, 48, 0.1); color: var(--like-color); cursor: not-allowed; }
+        .like-btn.liked { background: rgba(255, 59, 48, 0.1); color: var(--like-color); cursor: pointer; }
         .like-btn.liked .heart-icon { transform: scale(1.1); font-weight: bold; }
         
-        .share-btn { flex-grow: 1; background: var(--gray-light); border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease; color: #333; }
-        .share-btn:hover { background: #000; color: #fff; }
+        /* Premium Capsule Share Button Layout */
+        .share-btn { flex-grow: 1; background: #ffffff; border: 1px solid var(--border-color); padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); color: #222; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .share-btn:hover { background: #000; color: #fff; border-color: #000; transform: scale(1.02); }
         
         .copy-btn { background: #111; color: #fff; border: none; width: 100%; padding: 11px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background 0.2s; margin-top: auto; }
         .copy-btn:hover { background: #333; }
@@ -97,6 +98,10 @@
                     <h2 id="modalTitle" style="margin-bottom: 20px; font-size: 1.8rem; letter-spacing: -0.5px;"></h2>
                     <p style="font-weight: 600; margin-bottom: 6px; font-size: 0.95rem;">Prompt Specs:</p>
                     <div class="prompt-box" id="modalPrompt" style="max-height: none; margin-bottom: 20px; font-size: 0.95rem; padding: 15px;"></div>
+                    
+                    <!-- Dynamic Interactive Container Inside Modal View -->
+                    <div class="actions-row" id="modalActionsRow" style="margin-bottom: 20px;"></div>
+                    
                     <button class="copy-btn" id="modalCopyBtn" style="padding: 14px;">Copy Prompt String</button>
                 </div>
             </div>
@@ -159,7 +164,7 @@
                         <div class="card-title">${item.name}</div>
                         <div class="prompt-box">${item.prompt}</div>
                         <div class="actions-row">
-                            <button class="${buttonClass}" onclick="likeStyle('${item.id}', this)">
+                            <button class="${buttonClass}" data-id="${item.id}" onclick="likeStyle('${item.id}', this)">
                                 <span class="heart-icon">${heartSymbol}</span>
                                 <span class="like-count">${likes}</span>
                             </button>
@@ -174,30 +179,58 @@
             });
         }
 
-        // Strict One Like Logic engine
+        // Upgraded Toggle Like Engine (+1 / -1) Logic
         window.likeStyle = async function(id, btn) {
-            if (localStorage.getItem(`liked_${id}`)) {
-                alert("Neenga thaan intha style-ku aalady like pantiye bro! 😎");
-                return; 
-            }
-            
             btn.disabled = true;
+            const isLiked = localStorage.getItem(`liked_${id}`) !== null;
             try {
                 const styleRef = doc(db, "styles", id);
-                await updateDoc(styleRef, { likes: increment(1) });
                 
-                // Local check storage block lock
-                localStorage.setItem(`liked_${id}`, 'true');
-                
-                btn.className = 'like-btn liked';
-                btn.querySelector('.heart-icon').innerText = '❤️';
-                const countSpan = btn.querySelector('.like-count');
-                countSpan.innerText = parseInt(countSpan.innerText) + 1;
+                if (isLiked) {
+                    // Unlike block operation
+                    await updateDoc(styleRef, { likes: increment(-1) });
+                    localStorage.removeItem(`liked_${id}`);
+                    
+                    // Sync values instantly on UI
+                    updateLikeButtonsUI(id, false, -1);
+                } else {
+                    // Normal like block operation
+                    await updateDoc(styleRef, { likes: increment(1) });
+                    localStorage.setItem(`liked_${id}`, 'true');
+                    
+                    // Sync values instantly on UI
+                    updateLikeButtonsUI(id, true, 1);
+                }
             } catch (err) {
                 console.error(err);
             } finally {
                 btn.disabled = false;
             }
+        }
+
+        // Live Synchronizer helper to keep main page and modal values identical
+        function updateLikeButtonsUI(id, isLikedState, valueChange) {
+            // Update data array values local
+            const targetIdx = allStyles.findIndex(item => item.id === id);
+            if(targetIdx !== -1) {
+                allStyles[targetIdx].likes = (allStyles[targetIdx].likes || 0) + valueChange;
+            }
+
+            const selector = `button[data-id="${id}"]`;
+            const buttons = document.querySelectorAll(selector);
+            buttons.forEach(button => {
+                if(isLikedState) {
+                    button.className = 'like-btn liked';
+                    button.querySelector('.heart-icon').innerText = '❤️';
+                } else {
+                    button.className = 'like-btn';
+                    button.querySelector('.heart-icon').innerText = '🤍';
+                }
+                const countSpan = button.querySelector('.like-count');
+                if(countSpan) {
+                    button.querySelector('.like-count').innerText = parseInt(countSpan.innerText) + valueChange;
+                }
+            });
         }
 
         // Animated Smooth Share Feedback
@@ -258,6 +291,23 @@
             document.getElementById('modalTitle').innerText = selected.name;
             document.getElementById('modalPrompt').innerText = selected.prompt;
             document.getElementById('modalCopyBtn').onclick = (e) => copyText(selected.prompt, e.target);
+
+            // Dynamic Modal View Actions Injection logic
+            const hasLiked = localStorage.getItem(`liked_${selected.id}`) !== null;
+            const buttonClass = hasLiked ? 'like-btn liked' : 'like-btn';
+            const heartSymbol = hasLiked ? '❤️' : '🤍';
+            const currentLikes = selected.likes || 0;
+
+            const modalActions = document.getElementById('modalActionsRow');
+            modalActions.innerHTML = `
+                <button class="${buttonClass}" data-id="${selected.id}" onclick="likeStyle('${selected.id}', this)">
+                    <span class="heart-icon">${heartSymbol}</span>
+                    <span class="like-count">${currentLikes}</span>
+                </button>
+                <button class="share-btn" onclick="shareStyle('${selected.name}', '${selected.prompt.replace(/'/g, "\\'")}', this)">
+                    🔗 Share Style
+                </button>
+            `;
 
             const moreImages = allStyles.filter(item => item.category === selected.category && item.id !== selected.id);
             const moreGrid = document.getElementById('moreImagesGrid');
