@@ -125,9 +125,8 @@
 
             const file = fileInput.files[0];
 
-            // Firestore 1MB limits clear check
             if (file.size > 1048576) { 
-                alert("Image perusa iruku bro! Please 1MB kulla compressed photo select pannunga.");
+                alert("Image perusa iruku bro! Please 1MB kulla compressed/low-size photo select pannunga.");
                 return;
             }
 
@@ -145,11 +144,11 @@
                     timestamp: new Date()
                 });
                 
-                alert("Style Uploaded Successfully! Chek index.html home page.");
+                alert("Style Uploaded Successfully!");
                 document.getElementById('adminForm').reset();
             } catch (error) {
                 console.error("Error updating database: ", error);
-                alert("Upload failed! Database connectivity issue.");
+                alert("Upload failed! Firebase rules set panniட்டீங்களா-னு செக் பண்ணுங்க.");
             } finally {
                 uploadBtn.innerText = "Upload Style to Website";
                 uploadBtn.disabled = false;
