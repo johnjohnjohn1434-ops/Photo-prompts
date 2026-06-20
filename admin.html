@@ -6,41 +6,71 @@
     <title>Hansitha Style - Admin Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f4f4f4; font-family: 'Poppins', sans-serif; padding: 50px 20px; }
-        .admin-box { max-width: 550px; background: #fff; margin: 0 auto; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h2 { text-align: center; margin-bottom: 30px; color: #111; }
+        body { background-color: #f4f4f4; font-family: 'Poppins', sans-serif; padding: 30px 20px; }
+        .container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+        .admin-box { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h2, h3 { text-align: center; margin-bottom: 25px; color: #111; }
         .admin-form { display: flex; flex-direction: column; gap: 20px; }
         .admin-form input, .admin-form select, .admin-form textarea { padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; outline: none; }
         .file-label { font-size: 0.9rem; color: #666; margin-bottom: -15px; font-weight: 500; }
         .submit-btn { background: #000; color: #fff; border: none; padding: 14px; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: 500; }
-        .submit-btn:disabled { background: #666; cursor: not-allowed; }
+        .submit-btn:disabled { background: #666; }
+        
+        /* List section styling */
+        .items-list { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .list-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .list-table th, .list-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .list-table th { background: #f9f9f9; }
+        .thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
+        .btn-edit { background: #2196F3; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+        .btn-delete { background: #F44336; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="admin-box">
-        <h2>Hansitha Style - Admin Panel</h2>
-        <form class="admin-form" id="adminForm">
-            <input type="text" id="prodName" placeholder="Style Name (e.g., Casual Style)" required>
-            
-            <span class="file-label">Select Photo (Auto-compress active):</span>
-            <input type="file" id="prodFile" accept="image/*" required>
-            
-            <textarea id="prodPrompt" placeholder="Prompt ah inga thanga..." rows="4" required></textarea>
-            
-            <select id="prodCategory">
-                <option value="Women">Women</option>
-                <option value="Men">Men</option>
-                <option value="Pullingo">Pullingo</option>
-            </select>
-            
-            <button type="submit" id="uploadBtn" class="submit-btn">Upload Style to Website</button>
-        </form>
+    <div class="container">
+        <div class="admin-box">
+            <h2 id="formTitle">Upload New Style</h2>
+            <form class="admin-form" id="adminForm">
+                <input type="hidden" id="editId">
+                <input type="text" id="prodName" placeholder="Style Name (e.g., Casual Style)" required>
+                
+                <span class="file-label" id="fileLabel">Select Photo (Auto-compress active):</span>
+                <input type="file" id="prodFile" accept="image/*" required>
+                
+                <textarea id="prodPrompt" placeholder="Prompt ah inga thanga..." rows="4" required></textarea>
+                
+                <select id="prodCategory">
+                    <option value="Women">Women</option>
+                    <option value="Men">Men</option>
+                    <option value="Pullingo">Pullingo</option>
+                </select>
+                
+                <button type="submit" id="uploadBtn" class="submit-btn">Upload Style to Website</button>
+                <button type="button" id="cancelEditBtn" class="submit-btn" style="background:#666; display:none; margin-top:-10px;">Cancel Edit</button>
+            </form>
+        </div>
+
+        <div class="items-list">
+            <h3>Manage Existing Styles (Edit / Delete)</h3>
+            <table class="list-table">
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTableBody">
+                    </tbody>
+            </table>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBJgk2EzELMAeW0dhw2hyTIxtp6f7Tbo8M",
@@ -54,8 +84,8 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        let currentStyles = [];
 
-        // Periya image-ah automatic-ah web scale layout-ku compress panra logic
         function compressAndConvertToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -66,68 +96,131 @@
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        
-                        // Width and Height setting for compression (Max 800px width standard)
                         const max_width = 800;
                         const scaleSize = max_width / img.width;
-                        
-                        if(img.width > max_width) {
-                            canvas.width = max_width;
-                            canvas.height = img.height * scaleSize;
-                        } else {
-                            canvas.width = img.width;
-                            canvas.height = img.height;
-                        }
-                        
+                        canvas.width = (img.width > max_width) ? max_width : img.width;
+                        canvas.height = (img.width > max_width) ? img.height * scaleSize : img.height;
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        
-                        // 0.6 quality reduction lowers image file size to < 150KB automatically
-                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                        resolve(compressedBase64);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                 };
                 reader.onerror = error => reject(error);
             });
         }
 
+        async function loadStylesList() {
+            const querySnapshot = await getDocs(collection(db, "styles"));
+            currentStyles = [];
+            const tbody = document.getElementById('itemsTableBody');
+            tbody.innerHTML = '';
+            
+            querySnapshot.forEach((doc) => {
+                currentStyles.push({ id: doc.id, ...doc.data() });
+            });
+
+            currentStyles.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><img src="${item.image}" class="thumb"></td>
+                    <td>${item.name}</td>
+                    <td>${item.category}</td>
+                    <td>
+                        <button class="btn-edit" onclick="startEdit('${item.id}')">Edit</button>
+                        <button class="btn-delete" onclick="deleteStyle('${item.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.deleteStyle = async function(id) {
+            if(confirm("Are you sure you want to delete this style?")) {
+                await deleteDoc(doc(db, "styles", id));
+                alert("Deleted successfully!");
+                loadStylesList();
+            }
+        }
+
+        window.startEdit = function(id) {
+            const target = currentStyles.find(item => item.id === id);
+            if(!target) return;
+
+            document.getElementById('editId').value = target.id;
+            document.getElementById('prodName').value = target.name;
+            document.getElementById('prodPrompt').value = target.prompt;
+            document.getElementById('prodCategory').value = target.category;
+            
+            // Photo editing layout rules hide
+            document.getElementById('prodFile').required = false;
+            document.getElementById('prodFile').style.display = 'none';
+            document.getElementById('fileLabel').style.display = 'none';
+
+            document.getElementById('formTitle').innerText = "Edit Style Details";
+            document.getElementById('uploadBtn').innerText = "Update Style Info";
+            document.getElementById('cancelEditBtn').style.display = 'block';
+        }
+
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            resetFormState();
+        });
+
+        function resetFormState() {
+            document.getElementById('adminForm').reset();
+            document.getElementById('editId').value = '';
+            document.getElementById('prodFile').required = true;
+            document.getElementById('prodFile').style.display = 'block';
+            document.getElementById('fileLabel').style.display = 'block';
+            document.getElementById('formTitle').innerText = "Upload New Style";
+            document.getElementById('uploadBtn').innerText = "Upload Style to Website";
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        }
+
         document.getElementById('adminForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const editId = document.getElementById('editId').value;
             const name = document.getElementById('prodName').value;
             const fileInput = document.getElementById('prodFile');
             const prompt = document.getElementById('prodPrompt').value;
             const category = document.getElementById('prodCategory').value;
             const uploadBtn = document.getElementById('uploadBtn');
 
-            if (fileInput.files.length === 0) {
-                alert("Please select an image file!");
-                return;
-            }
-
-            uploadBtn.innerText = "Compressing & Uploading...";
             uploadBtn.disabled = true;
 
             try {
-                // Generates safe optimized base64 layout code
-                const optimizedImage = await compressAndConvertToBase64(fileInput.files[0]);
+                if(editId) {
+                    // Update Operation (Text details only)
+                    const styleRef = doc(db, "styles", editId);
+                    let updateData = { name, prompt, category };
 
-                await addDoc(collection(db, "styles"), {
-                    name,
-                    image: optimizedImage,
-                    prompt,
-                    category,
-                    timestamp: new Date()
-                });
-                
-                alert("Style Uploaded Successfully with auto compression!");
-                document.getElementById('adminForm').reset();
+                    if(fileInput.files.length > 0) {
+                        updateData.image = await compressAndConvertToBase64(fileInput.files[0]);
+                    }
+
+                    await updateDoc(styleRef, updateData);
+                    alert("Style Updated Successfully!");
+                    resetFormState();
+                } else {
+                    // Normal Insertion
+                    if (fileInput.files.length === 0) { return alert("Please select a file!"); }
+                    uploadBtn.innerText = "Compressing & Uploading...";
+                    const optimizedImage = await compressAndConvertToBase64(fileInput.files[0]);
+
+                    await addDoc(collection(db, "styles"), {
+                        name, image: optimizedImage, prompt, category, likes: 0, timestamp: new Date()
+                    });
+                    alert("Uploaded successfully!");
+                    document.getElementById('adminForm').reset();
+                }
+                loadStylesList();
             } catch (error) {
-                console.error("Database connection block: ", error);
-                alert("Upload failed! Data structural error or config crash.");
+                console.error(error);
+                alert("Process Failed!");
             } finally {
-                uploadBtn.innerText = "Upload Style to Website";
                 uploadBtn.disabled = false;
             }
         });
+
+        loadStylesList();
     </script>
 </body>
 </html>
