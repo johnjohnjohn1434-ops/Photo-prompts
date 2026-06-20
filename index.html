@@ -31,7 +31,7 @@
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 30px; }
         
         /* Modernized Elegant Card */
-        .card { background: var(--card-bg); border-radius: 16px; overflow: hidden; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .card { background: var(--card-bg); border-radius: 16px; overflow: hidden; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color); display: flex; flex-direction: column; position: relative; }
         .card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
         .img-container { position: relative; width: 100%; height: 320px; overflow: hidden; background: #f4f4f4; }
         .card img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: transform 0.5s ease; }
@@ -44,18 +44,20 @@
         /* Enhanced Interactive Actions Row */
         .actions-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
         
-        .like-btn { background: var(--gray-light); border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        /* Floating Heart Button Layout (Over the Image) */
+        .like-btn { position: absolute; top: 15px; right: 15px; z-index: 10; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.4); padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 4px 12px rgba(0,0,0,0.08); color: #111; }
         .like-btn .heart-icon { transition: transform 0.2s ease; display: inline-block; }
-        .like-btn:hover { background: #e8e8ed; transform: scale(1.03); }
+        .like-btn:hover { background: #ffffff; transform: scale(1.05); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
         .like-btn:active .heart-icon { transform: scale(1.4); }
         
         /* Strict One Like Active State */
-        .like-btn.liked { background: rgba(255, 59, 48, 0.1); color: var(--like-color); cursor: pointer; }
+        .like-btn.liked { background: #ffffff; color: var(--like-color); border-color: rgba(255, 59, 48, 0.2); }
         .like-btn.liked .heart-icon { transform: scale(1.1); font-weight: bold; }
         
-        /* Premium Capsule Share Button Layout */
-        .share-btn { flex-grow: 1; background: #ffffff; border: 1px solid var(--border-color); padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); color: #222; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        /* Premium Capsule Share Button Layout Without Emojis */
+        .share-btn { flex-grow: 1; background: #ffffff; border: 1px solid var(--border-color); padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); color: #222; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
         .share-btn:hover { background: #000; color: #fff; border-color: #000; transform: scale(1.02); }
+        .share-btn svg { width: 16px; height: 16px; fill: currentColor; transition: fill 0.2s; }
         
         .copy-btn { background: #111; color: #fff; border: none; width: 100%; padding: 11px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background 0.2s; margin-top: auto; }
         .copy-btn:hover { background: #333; }
@@ -65,7 +67,8 @@
         .modal-close { position: fixed; top: 20px; right: 30px; font-size: 2.2rem; cursor: pointer; font-weight: 300; line-height: 1; }
         .modal-content { max-width: 940px; margin: 40px auto 0 auto; }
         .modal-main-view { display: flex; gap: 40px; flex-wrap: wrap; margin-bottom: 50px; }
-        .modal-main-img { max-width: 480px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
+        .modal-main-img-container { position: relative; max-width: 480px; width: 100%; background: #f4f4f4; border-radius: 12px; overflow: hidden; }
+        .modal-main-img { width: 100%; height: auto; display: block; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
         .modal-details { flex: 1; min-width: 300px; }
         .more-images-section { border-top: 1px solid var(--border-color); padding-top: 40px; }
     </style>
@@ -93,13 +96,16 @@
         <span class="modal-close" onclick="closeModal()">&times;</span>
         <div class="modal-content">
             <div class="modal-main-view">
-                <img id="modalImg" class="modal-main-img" src="" alt="">
+                <div class="modal-main-img-container" id="modalImgContainer">
+                    <img id="modalImg" class="modal-main-img" src="" alt="">
+                    <!-- Floating Heart Inside Modal View Image Cover -->
+                </div>
                 <div class="modal-details">
                     <h2 id="modalTitle" style="margin-bottom: 20px; font-size: 1.8rem; letter-spacing: -0.5px;"></h2>
                     <p style="font-weight: 600; margin-bottom: 6px; font-size: 0.95rem;">Prompt Specs:</p>
                     <div class="prompt-box" id="modalPrompt" style="max-height: none; margin-bottom: 20px; font-size: 0.95rem; padding: 15px;"></div>
                     
-                    <!-- Dynamic Interactive Container Inside Modal View -->
+                    <!-- Dynamic Interactive Share Row Container Inside Modal View -->
                     <div class="actions-row" id="modalActionsRow" style="margin-bottom: 20px;"></div>
                     
                     <button class="copy-btn" id="modalCopyBtn" style="padding: 14px;">Copy Prompt String</button>
@@ -158,18 +164,19 @@
                 card.className = 'card';
                 card.innerHTML = `
                     <div class="img-container">
+                        <button class="${buttonClass}" data-id="${item.id}" onclick="likeStyle('${item.id}', this)">
+                            <span class="heart-icon">${heartSymbol}</span>
+                            <span class="like-count">${likes}</span>
+                        </button>
                         <img src="${item.image}" alt="${item.name}" onclick="openModal('${item.id}')">
                     </div>
                     <div class="card-info">
                         <div class="card-title">${item.name}</div>
                         <div class="prompt-box">${item.prompt}</div>
                         <div class="actions-row">
-                            <button class="${buttonClass}" data-id="${item.id}" onclick="likeStyle('${item.id}', this)">
-                                <span class="heart-icon">${heartSymbol}</span>
-                                <span class="like-count">${likes}</span>
-                            </button>
                             <button class="share-btn" onclick="shareStyle('${item.name}', '${item.prompt.replace(/'/g, "\\'")}', this)">
-                                🔗 Share
+                                <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+                                Share Style
                             </button>
                         </div>
                         <button class="copy-btn" onclick="copyText('${item.prompt.replace(/'/g, "\\'")}', this)">Copy Prompt</button>
@@ -237,6 +244,7 @@
         window.shareStyle = function(name, prompt, btn) {
             const shareText = `Check out this Awesome Style: ${name}\n\nAI Prompt String:\n"${prompt}"`;
             const originalHTML = btn.innerHTML;
+            const svgIcon = `<svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>`;
             
             if (navigator.share) {
                 navigator.share({ title: name, text: shareText })
@@ -298,14 +306,23 @@
             const heartSymbol = hasLiked ? '❤️' : '🤍';
             const currentLikes = selected.likes || 0;
 
+            // Remove previous floating button inside modal if any to avoid duplication
+            const oldModalLike = document.getElementById('modalImgContainer').querySelector('.like-btn');
+            if(oldModalLike) oldModalLike.remove();
+
+            // Inject Floating Heart Overlay inside Modal Image view
+            const modalLikeBtn = document.createElement('button');
+            modalLikeBtn.className = buttonClass;
+            modalLikeBtn.setAttribute('data-id', selected.id);
+            modalLikeBtn.onclick = function() { window.likeStyle(selected.id, this); };
+            modalLikeBtn.innerHTML = `<span class="heart-icon">${heartSymbol}</span> <span class="like-count">${currentLikes}</span>`;
+            document.getElementById('modalImgContainer').appendChild(modalLikeBtn);
+
             const modalActions = document.getElementById('modalActionsRow');
             modalActions.innerHTML = `
-                <button class="${buttonClass}" data-id="${selected.id}" onclick="likeStyle('${selected.id}', this)">
-                    <span class="heart-icon">${heartSymbol}</span>
-                    <span class="like-count">${currentLikes}</span>
-                </button>
                 <button class="share-btn" onclick="shareStyle('${selected.name}', '${selected.prompt.replace(/'/g, "\\'")}', this)">
-                    🔗 Share Style
+                    <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+                    Share Style
                 </button>
             `;
 
