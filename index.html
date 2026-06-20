@@ -250,12 +250,16 @@
         let allStyles = [];
 
         async function fetchStyles() {
-            const querySnapshot = await getDocs(collection(db, "styles"));
-            allStyles = [];
-            querySnapshot.forEach((doc) => {
-                allStyles.push({ id: doc.id, ...doc.data() });
-            });
-            renderGallery(allStyles);
+            try {
+                const querySnapshot = await getDocs(collection(db, "styles"));
+                allStyles = [];
+                querySnapshot.forEach((doc) => {
+                    allStyles.push({ id: doc.id, ...doc.data() });
+                });
+                renderGallery(allStyles);
+            } catch (err) {
+                console.error("Error fetching data: ", err);
+            }
         }
 
         function renderGallery(items) {
@@ -263,7 +267,7 @@
             grid.innerHTML = '';
             
             if(items.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">No styles found!</p>';
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1; padding:40px 0;">No styles found!</p>';
                 return;
             }
 
