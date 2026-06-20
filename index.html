@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -42,7 +42,6 @@
             color: #000;
         }
 
-        /* Search Bar styling */
         .search-container {
             max-width: 500px;
             margin: 0 auto 20px auto;
@@ -64,7 +63,6 @@
             box-shadow: 0 0 8px rgba(0,0,0,0.1);
         }
 
-        /* Categories Bar */
         .categories {
             display: flex;
             justify-content: center;
@@ -89,7 +87,6 @@
             border-color: #000;
         }
 
-        /* Main Grid Gallery */
         .main-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -155,11 +152,6 @@
             font-weight: 500;
         }
 
-        .copy-btn:active {
-            background: #444;
-        }
-
-        /* Detail Modal View (Photo thotta kila more images varrathu) */
         .modal {
             display: none;
             position: fixed;
@@ -196,23 +188,6 @@
             border-top: 1px solid var(--border-color);
             padding-top: 30px;
         }
-
-        /* Admin Panel Section */
-        .admin-section {
-            background: var(--gray-light);
-            padding: 30px;
-            margin-top: 50px;
-            border-top: 2px dashed #ccc;
-            border-radius: 8px;
-        }
-
-        .admin-form {
-            max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px;
-        }
-
-        .admin-form input, .admin-form select, .admin-form textarea {
-            padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;
-        }
     </style>
 </head>
 <body>
@@ -232,23 +207,7 @@
     </header>
 
     <main class="main-container">
-        <div class="gallery-grid" id="galleryGrid">
-            </div>
-
-        <section class="admin-section">
-            <h2 style="text-align: center; margin-bottom: 20px;">Admin Upload Panel</h2>
-            <form class="admin-form" id="adminForm">
-                <input type="text" id="prodName" placeholder="Name (e.g., Cool Boy Style)" required>
-                <input type="text" id="prodImage" placeholder="Photo Direct URL (Link)" required>
-                <textarea id="prodPrompt" placeholder="Prompt ah inga thanga..." rows="3" required></textarea>
-                <select id="prodCategory">
-                    <option value="Women">Women</option>
-                    <option value="Men">Men</option>
-                    <option value="Pullingo">Pullingo</option>
-                </select>
-                <button type="submit" class="copy-btn" style="background:#000; padding:12px;">Upload Style</button>
-            </form>
-        </section>
+        <div class="gallery-grid" id="galleryGrid"></div>
     </main>
 
     <div class="modal" id="imageModal">
@@ -273,9 +232,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Ungaludaiya Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyBJgk2EzELMAeW0dhw2hyTIxtp6f7Tbo8M",
           authDomain: "thivash-32c14.firebaseapp.com",
@@ -286,13 +244,11 @@
           measurementId: "G-FQCXPWXLZ6"
         };
 
-        // Firebase-ah initialize panrom
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
         let allStyles = [];
 
-        // Database la irunthu data-va eduthu website la kaata
         async function fetchStyles() {
             const querySnapshot = await getDocs(collection(db, "styles"));
             allStyles = [];
@@ -302,7 +258,6 @@
             renderGallery(allStyles);
         }
 
-        // Gallery Grid build panna
         function renderGallery(items) {
             const grid = document.getElementById('galleryGrid');
             grid.innerHTML = '';
@@ -327,28 +282,6 @@
             });
         }
 
-        // Admin panel Upload logic
-        document.getElementById('adminForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('prodName').value;
-            const image = document.getElementById('prodImage').value;
-            const prompt = document.getElementById('prodPrompt').value;
-            const category = document.getElementById('prodCategory').value;
-
-            try {
-                // Firestore "styles" collection-ku upload aahum
-                await addDoc(collection(db, "styles"), {
-                    name, image, prompt, category, timestamp: new Date()
-                });
-                alert("Style Successfully Uploaded!");
-                document.getElementById('adminForm').reset();
-                fetchStyles(); // UI-ah refresh pannum
-            } catch (error) {
-                console.error("Error adding document: ", error);
-            }
-        });
-
-        // Search Engine Feature
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const searchKey = e.target.value.toLowerCase();
             const filtered = allStyles.filter(item => 
@@ -358,9 +291,7 @@
             renderGallery(filtered);
         });
 
-        // Category Filter
         window.filterCategory = function(category) {
-            // Button Active styling toggle
             document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
@@ -372,14 +303,12 @@
             }
         }
 
-        // Global Copy Text Feature
         window.copyText = function(text) {
             navigator.clipboard.writeText(text).then(() => {
                 alert("Prompt Copied to Clipboard!");
             });
         }
 
-        // Photo Click panna Detail and More Images open aaharathu
         window.openModal = function(id) {
             const selected = allStyles.find(item => item.id === id);
             if(!selected) return;
@@ -389,7 +318,6 @@
             document.getElementById('modalPrompt').innerText = selected.prompt;
             document.getElementById('modalCopyBtn').onclick = () => copyText(selected.prompt);
 
-            // Related/More Images logic (same category-la irukura matha items)
             const moreImages = allStyles.filter(item => item.category === selected.category && item.id !== selected.id);
             const moreGrid = document.getElementById('moreImagesGrid');
             moreGrid.innerHTML = '';
@@ -413,9 +341,7 @@
             document.getElementById('imageModal').style.display = 'none';
         }
 
-        // Initial Load data fetch
         fetchStyles();
     </script>
 </body>
 </html>
-
