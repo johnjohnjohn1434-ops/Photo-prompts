@@ -10,21 +10,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0b0f19;
-            --card-bg: rgba(22, 28, 45, 0.6);
-            --text-color: #f3f4f6;
-            --gray-light: rgba(255, 255, 255, 0.05);
-            --gray-text: #9ca3af;
-            --border-color: rgba(255, 255, 255, 0.08);
-            --accent-color: #6366f1;
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --text-color: #0f172a;
+            --gray-light: rgba(15, 23, 42, 0.04);
+            --gray-text: #64748b;
+            --border-color: rgba(15, 23, 42, 0.08);
+            --accent-color: #4f46e5;
             --like-color: #ef4444;
-            --gradient-accent: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --gradient-accent: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); -webkit-font-smoothing: antialiased; background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 400px); }
+        body { background-color: var(--bg-color); color: var(--text-color); -webkit-font-smoothing: antialiased; background-image: radial-gradient(circle at top right, rgba(79, 70, 229, 0.04), transparent 400px); }
         
-        header { padding: 40px 20px 30px 20px; text-align: center; background: rgba(11, 15, 25, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
-        .logo { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-style: italic; letter-spacing: -0.5px; margin-bottom: 25px; background: linear-gradient(to right, #fff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        header { padding: 40px 20px 30px 20px; text-align: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
+        .logo { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-style: italic; letter-spacing: -0.5px; margin-bottom: 25px; background: linear-gradient(to right, #0f172a, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         .search-container { max-width: 520px; margin: 0 auto 30px auto; position: relative; }
         .search-container input { 
@@ -35,21 +35,21 @@
             font-size: 1rem; 
             outline: none; 
             background: var(--gray-light); 
-            color: #fff;
+            color: var(--text-color);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
         }
-        .search-container input::placeholder { color: #6b7280; }
+        .search-container input::placeholder { color: #94a3b8; }
         .search-container input:focus { 
             border-color: var(--accent-color); 
-            background: rgba(255,255,255,0.08); 
+            background: #fff; 
             transform: scale(1.02);
-            box-shadow: 0 0 30px rgba(99, 102, 241, 0.2); 
+            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.08); 
         }
         
         .categories { display: flex; justify-content: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
         .cat-btn { background: var(--gray-light); color: var(--text-color); border: 1px solid var(--border-color); padding: 10px 26px; border-radius: 25px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .cat-btn.active, .cat-btn:hover { background: var(--gradient-accent); color: #fff; border-color: transparent; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3); }
+        .cat-btn.active, .cat-btn:hover { background: var(--gradient-accent); color: #fff; border-color: transparent; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2); }
         
         .main-container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
         
@@ -65,7 +65,7 @@
             border-radius: 24px; 
             overflow: hidden; 
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02); 
             border: 1px solid var(--border-color); 
             display: inline-block;
             width: 100%;
@@ -73,22 +73,21 @@
             position: relative; 
             break-inside: avoid;
         }
-        .card:hover { transform: translateY(-8px); border-color: rgba(99, 102, 241, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .card:hover { transform: translateY(-8px); border-color: rgba(79, 70, 229, 0.3); box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06); }
         
-        .img-container { position: relative; width: 100%; background: #161c2d; display: block; overflow: hidden; border-radius: 24px; }
+        .img-container { position: relative; width: 100%; background: #f1f5f9; display: block; overflow: hidden; border-radius: 24px; }
         .card img { width: 100%; height: auto; display: block; cursor: pointer; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
         .card:hover img { transform: scale(1.05); }
         
-        /* Redesigned Fully UI Like Button */
         .like-btn { 
             position: absolute; 
             top: 18px; 
             right: 18px; 
             z-index: 10; 
-            background: rgba(11, 15, 25, 0.7); 
+            background: rgba(255, 255, 255, 0.85); 
             backdrop-filter: blur(12px); 
             -webkit-backdrop-filter: blur(12px); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border: 1px solid rgba(0, 0, 0, 0.05); 
             padding: 8px 16px; 
             border-radius: 30px; 
             cursor: pointer; 
@@ -98,8 +97,8 @@
             align-items: center; 
             gap: 8px; 
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            color: #fff; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04); 
+            color: var(--text-color); 
         }
         .like-btn svg { 
             width: 18px; 
@@ -109,8 +108,8 @@
             stroke-width: 2.5; 
             transition: transform 0.3s ease, fill 0.3s ease; 
         }
-        .like-btn:hover { background: rgba(255, 255, 255, 0.15); transform: scale(1.05); border-color: rgba(255,255,255,0.2); }
-        .like-btn.liked { background: rgba(239, 68, 68, 0.15); color: var(--like-color); border-color: rgba(239, 68, 68, 0.3); }
+        .like-btn:hover { background: #fff; transform: scale(1.05); border-color: rgba(0,0,0,0.1); }
+        .like-btn.liked { background: rgba(239, 68, 68, 0.08); color: var(--like-color); border-color: rgba(239, 68, 68, 0.15); }
         .like-btn.liked svg { fill: var(--like-color); stroke: var(--like-color); transform: scale(1.1); }
         
         @media(max-width: 600px) {
@@ -199,7 +198,6 @@
         }
 
         window.navigateToDetail = function(id) {
-            // Modal open aagathuku pathila detail.html open aagum layout
             window.location.href = `detail.html?id=${id}`;
         }
 
