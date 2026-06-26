@@ -7,77 +7,70 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0b0f19;
-            --card-bg: rgba(22, 28, 45, 0.6);
-            --text-color: #f3f4f6;
-            --gray-light: rgba(255, 255, 255, 0.05);
-            --gray-text: #9ca3af;
-            --border-color: rgba(255, 255, 255, 0.08);
-            --accent-color: #6366f1;
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --text-color: #0f172a;
+            --gray-light: rgba(15, 23, 42, 0.04);
+            --gray-text: #64748b;
+            --border-color: rgba(15, 23, 42, 0.08);
+            --accent-color: #4f46e5;
             --like-color: #ef4444;
-            --gradient-accent: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --gradient-accent: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); -webkit-font-smoothing: antialiased; padding-bottom: 60px; }
         
-        /* Premium Header Nav */
-        nav { padding: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); background: rgba(11, 15, 25, 0.8); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; }
-        .back-btn { display: flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; font-size: 0.95rem; font-weight: 500; background: var(--gray-light); padding: 8px 18px; border-radius: 30px; border: 1px solid var(--border-color); transition: all 0.3s; }
-        .back-btn:hover { background: #fff; color: #000; transform: translateX(-3px); }
+        nav { padding: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; }
+        .back-btn { display: flex; align-items: center; gap: 8px; color: var(--text-color); text-decoration: none; font-size: 0.95rem; font-weight: 500; background: var(--gray-light); padding: 8px 18px; border-radius: 30px; border: 1px solid var(--border-color); transition: all 0.3s; }
+        .back-btn:hover { background: #000; color: #fff; transform: translateX(-3px); }
         .back-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; }
-        .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-style: italic; background: linear-gradient(to right, #fff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-style: italic; background: linear-gradient(to right, #0f172a, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
 
-        /* Main Details Layout */
         .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
-        .detail-wrapper { display: flex; gap: 40px; background: var(--card-bg); border-radius: 32px; border: 1px solid var(--border-color); padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        .detail-wrapper { display: flex; gap: 40px; background: var(--card-bg); border-radius: 32px; border: 1px solid var(--border-color); padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 50px rgba(0,0,0,0.02); }
         
-        .image-section { flex: 1; min-width: 300px; position: relative; border-radius: 24px; overflow: hidden; background: #161c2d; }
+        .image-section { flex: 1; min-width: 300px; position: relative; border-radius: 24px; overflow: hidden; background: #f1f5f9; }
         .image-section img { width: 100%; height: auto; display: block; object-fit: cover; }
         
-        /* Floating Pure UI Like Button */
-        .like-btn { position: absolute; top: 20px; right: 20px; background: rgba(11, 15, 25, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 10px 18px; border-radius: 30px; cursor: pointer; color: #fff; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .like-btn { position: absolute; top: 20px; right: 20px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(0, 0, 0, 0.05); padding: 10px 18px; border-radius: 30px; cursor: pointer; color: var(--text-color); font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .like-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.5; transition: all 0.3s ease; }
-        .like-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.05); }
-        .like-btn.liked { background: rgba(239, 68, 68, 0.15); color: var(--like-color); border-color: rgba(239, 68, 68, 0.3); }
+        .like-btn:hover { background: #fff; transform: scale(1.05); }
+        .like-btn.liked { background: rgba(239, 68, 68, 0.08); color: var(--like-color); border-color: rgba(239, 68, 68, 0.15); }
         .like-btn.liked svg { fill: var(--like-color); stroke: var(--like-color); }
 
-        /* Content Section */
         .content-section { flex: 1.2; min-width: 300px; display: flex; flex-direction: column; justify-content: center; }
         .title { font-size: 2.2rem; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.5px; }
-        .category-tag { display: inline-block; background: rgba(99, 102, 241, 0.15); color: #818cf8; font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; margin-bottom: 25px; align-self: flex-start; }
+        .category-tag { display: inline-block; background: rgba(79, 70, 229, 0.08); color: #4f46e5; font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; margin-bottom: 25px; align-self: flex-start; }
         
         .section-label { font-size: 0.85rem; font-weight: 600; color: var(--gray-text); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
         
-        /* Collapsible Prompt Area */
         .prompt-container { background: var(--gray-light); border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; position: relative; margin-bottom: 25px; }
-        .prompt-text { font-size: 0.98rem; line-height: 1.6; color: #e5e7eb; overflow: hidden; transition: max-height 0.4s ease; max-height: 75px; }
+        .prompt-text { font-size: 0.98rem; line-height: 1.6; color: #334155; overflow: hidden; transition: max-height 0.4s ease; max-height: 75px; }
         .prompt-container.expanded .prompt-text { max-height: 500px; }
         .read-more-btn { background: none; border: none; color: var(--accent-color); font-weight: 600; font-size: 0.85rem; cursor: pointer; margin-top: 10px; display: none; align-items: center; gap: 4px; }
-        .read-more-btn:hover { color: #a855f7; text-decoration: underline; }
+        .read-more-btn:hover { color: #7c3aed; text-decoration: underline; }
 
-        /* Action Buttons Grid */
         .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .action-btn { padding: 14px 20px; border-radius: 50px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s; border: 1px solid var(--border-color); }
         
-        .copy-btn { background: var(--gradient-accent); color: #fff; border: none; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.25); }
-        .copy-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4); opacity: 0.95; }
+        .copy-btn { background: var(--gradient-accent); color: #fff; border: none; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.15); }
+        .copy-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(79, 70, 229, 0.25); opacity: 0.95; }
         .copy-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; }
 
-        .share-btn { background: var(--gray-light); color: #fff; }
-        .share-btn:hover { background: #fff; color: #000; border-color: #fff; transform: translateY(-2px); }
+        .share-btn { background: var(--gray-light); color: var(--text-color); }
+        .share-btn:hover { background: #000; color: #fff; border-color: #000; transform: translateY(-2px); }
         .share-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; }
 
-        /* Explore / Related Section */
         .related-section { margin-top: 60px; border-top: 1px solid var(--border-color); padding-top: 40px; }
         .related-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
         .related-title svg { width: 22px; height: 22px; fill: none; stroke: var(--accent-color); stroke-width: 2.5; }
         
         .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
         .related-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; cursor: pointer; transition: all 0.4s; }
-        .related-card:hover { transform: translateY(-6px); border-color: rgba(99, 102, 241, 0.4); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+        .related-card:hover { transform: translateY(-6px); border-color: rgba(79, 70, 229, 0.3); box-shadow: 0 15px 30px rgba(0,0,0,0.04); }
         .related-card img { width: 100%; height: auto; display: block; transition: transform 0.5s; }
         .related-card:hover img { transform: scale(1.04); }
-        .related-info { padding: 15px; font-size: 0.9rem; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .related-info { padding: 15px; font-size: 0.9rem; font-weight: 500; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         @media(max-width: 768px) {
             .detail-wrapper { flex-direction: column; padding: 20px; border-radius: 24px; }
@@ -94,14 +87,13 @@
             <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back
         </a>
         <a href="index.html" class="nav-logo">Hansitha Style</a>
-        <div style="width: 80px;"></div> <!-- Spacer -->
+        <div style="width: 80px;"></div>
     </nav>
 
     <main class="container">
         <div class="detail-wrapper">
             <div class="image-section" id="imageSection">
                 <img id="detailImg" src="" alt="">
-                <!-- Dynamic UI Like button dynamically loaded below -->
             </div>
             
             <div class="content-section">
@@ -156,7 +148,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        // Get Style ID from URL string query parameter
         const urlParams = new URLSearchParams(window.location.search);
         const styleId = urlParams.get('id');
 
@@ -168,7 +159,6 @@
                 return;
             }
 
-            // Fetch current item details
             const docRef = doc(db, "styles", styleId);
             const docSnap = await getDoc(docRef);
 
@@ -190,17 +180,14 @@
             const promptTextEl = document.getElementById('detailPrompt');
             promptTextEl.innerText = currentItem.prompt;
 
-            // Setup Like UI Button Status
             setupLikeButton();
 
-            // Toggle Read More option visibility logic dynamically 
             setTimeout(() => {
                 if(promptTextEl.scrollHeight > 75) {
                     document.getElementById('readMoreBtn').style.display = 'inline-flex';
                 }
             }, 50);
 
-            // Click Actions Setup
             document.getElementById('copyBtn').onclick = () => copyPromptText(currentItem.prompt);
             document.getElementById('shareBtn').onclick = () => shareOutfit(currentItem.name, currentItem.prompt);
         }
@@ -287,8 +274,8 @@
             } else {
                 navigator.clipboard.writeText(window.location.href).then(() => {
                     btn.innerHTML = `✓ Link Copied!`;
-                    btn.style.background = "#fff";
-                    btn.style.color = "#000";
+                    btn.style.background = "#000";
+                    btn.style.color = "#fff";
                     setTimeout(() => {
                         btn.innerHTML = origHTML;
                         btn.style.background = "";
