@@ -1,410 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prompt Details - Hansitha Style</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Results</title>
     <style>
-        :root {
-            --bg-color: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.8);
-            --text-color: #0f172a;
-            --gray-light: rgba(15, 23, 42, 0.04);
-            --gray-text: #64748b;
-            --border-color: rgba(15, 23, 42, 0.08);
-            --accent-color: #4f46e5;
-            --like-color: #ef4444;
-            --gradient-accent: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); -webkit-font-smoothing: antialiased; padding-bottom: 60px; }
-        
-        nav { padding: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; }
-        .back-btn { display: flex; align-items: center; gap: 8px; color: var(--text-color); text-decoration: none; font-size: 0.95rem; font-weight: 500; background: var(--gray-light); padding: 8px 18px; border-radius: 30px; border: 1px solid var(--border-color); transition: all 0.3s; }
-        .back-btn:hover { background: #000; color: #fff; transform: translateX(-3px); }
-        .back-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; }
-        .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-style: italic; background: linear-gradient(to right, #0f172a, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
-
-        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
-        .detail-wrapper { display: flex; gap: 40px; background: var(--card-bg); border-radius: 32px; border: 1px solid var(--border-color); padding: 30px; backdrop-filter: blur(10px); box-shadow: 0 20px 50px rgba(0,0,0,0.02); }
-        
-        .image-section { flex: 1; min-width: 300px; position: relative; border-radius: 24px; overflow: hidden; background: #f1f5f9; min-height: 300px; }
-        
-        /* Skeleton Animation Styles */
-        @keyframes shimmer {
-            0% { background-position: -1000px 0; }
-            100% { background-position: 1000px 0; }
-        }
-        .skeleton {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: #e2e8f0;
-            background-image: linear-gradient(90deg, #e2e8f0 0px, #f8fafc 50%, #e2e8f0 100%);
-            background-size: 1000px 100%;
-            animation: shimmer 2s infinite linear;
-            z-index: 1;
-        }
-
-        /* Detail Image loading setup */
-        #detailImg { width: 100%; height: auto; display: block; object-fit: cover; opacity: 0; transition: opacity 0.5s ease; position: relative; z-index: 2; }
-        #detailImg.loaded { opacity: 1; }
-        
-        .like-btn { position: absolute; top: 20px; right: 20px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(0, 0, 0, 0.05); padding: 10px 18px; border-radius: 30px; cursor: pointer; color: var(--text-color); font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10;}
-        .like-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.5; transition: all 0.3s ease; }
-        .like-btn:hover { background: #fff; transform: scale(1.05); }
-        .like-btn.liked { background: rgba(239, 68, 68, 0.08); color: var(--like-color); border-color: rgba(239, 68, 68, 0.15); }
-        .like-btn.liked svg { fill: var(--like-color); stroke: var(--like-color); }
-
-        .content-section { flex: 1.2; min-width: 300px; display: flex; flex-direction: column; justify-content: center; }
-        .title { font-size: 2.2rem; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.5px; }
-        .category-tag { display: none; background: rgba(79, 70, 229, 0.08); color: #4f46e5; font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; margin-bottom: 25px; align-self: flex-start; }
-        
-        .section-label { font-size: 0.85rem; font-weight: 600; color: var(--gray-text); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-        
-        .prompt-container { background: var(--gray-light); border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; position: relative; margin-bottom: 25px; min-height: 80px; }
-        .prompt-text { font-size: 0.98rem; line-height: 1.6; color: #334155; overflow: hidden; transition: max-height 0.4s ease; max-height: 75px; }
-        .prompt-container.expanded .prompt-text { max-height: 500px; }
-        .read-more-btn { background: none; border: none; color: var(--accent-color); font-weight: 600; font-size: 0.85rem; cursor: pointer; margin-top: 10px; display: none; align-items: center; gap: 4px; }
-        .read-more-btn:hover { color: #7c3aed; text-decoration: underline; }
-
-        .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .action-btn { padding: 14px 20px; border-radius: 50px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s; border: 1px solid var(--border-color); }
-        
-        .copy-btn { background: var(--gradient-accent); color: #fff; border: none; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.15); }
-        .copy-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(79, 70, 229, 0.25); opacity: 0.95; }
-        .copy-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; }
-
-        .share-btn { background: var(--gray-light); color: var(--text-color); }
-        .share-btn:hover { background: #000; color: #fff; border-color: #000; transform: translateY(-2px); }
-        .share-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; }
-
-        .related-section { margin-top: 60px; border-top: 1px solid var(--border-color); padding-top: 40px; }
-        .related-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
-        .related-title svg { width: 22px; height: 22px; fill: none; stroke: var(--accent-color); stroke-width: 2.5; }
-        
-        .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
-        .related-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; cursor: pointer; transition: all 0.4s; }
-        .related-card:hover { transform: translateY(-6px); border-color: rgba(79, 70, 229, 0.3); box-shadow: 0 15px 30px rgba(0,0,0,0.04); }
-        
-        .related-img-box { position: relative; width: 100%; aspect-ratio: 1; background: #f1f5f9; overflow: hidden; }
-        .related-img-box img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: transform 0.5s, opacity 0.4s; position: relative; z-index: 2; }
-        .related-img-box img.loaded { opacity: 1; }
-        .related-card:hover .related-img-box img { transform: scale(1.04); }
-        
-        .related-info { padding: 15px; font-size: 0.9rem; font-weight: 500; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        @media(max-width: 768px) {
-            .detail-wrapper { flex-direction: column; padding: 20px; border-radius: 24px; }
-            .title { font-size: 1.8rem; }
-            .actions-grid { grid-template-columns: 1fr; }
-            .related-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        }
+        body { font-family: Arial; background: #f5f5f5; margin: 0 }
+        header { padding: 15px; background: #fff; position: sticky; top: 0 }
+        input { width: 100%; max-width: 500px; padding: 12px; border-radius: 30px; border: 1px solid #ccc }
+        .grid { columns: 2; column-gap: 12px; padding: 12px }
+        .card { break-inside: avoid; background: #fff; border-radius: 12px; margin-bottom: 12px; overflow: hidden }
+        img { width: 100%; display: block; cursor: pointer; }
+        .info { padding: 10px }
+        .like { cursor: pointer; display: flex; align-items: center; gap: 5px; border: none; background: none; }
+        @media(min-width: 800px) { .grid { columns: 4 } }
     </style>
 </head>
 <body>
 
-    <nav>
-        <a href="index.html" class="back-btn">
-            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back
-        </a>
-        <a href="index.html" class="nav-logo">Hansitha Style</a>
-        <div style="width: 80px;"></div>
-    </nav>
+<header><input id="s" placeholder="Search..."></header>
+<div class="grid" id="g"></div>
 
-    <main class="container">
-        <div class="detail-wrapper">
-            <div class="image-section" id="imageSection">
-                <div class="skeleton" id="mainSkeleton"></div>
-                <img id="detailImg" src="" alt="" onload="this.classList.add('loaded'); document.getElementById('mainSkeleton').style.display='none'">
-            </div>
-            
-            <div class="content-section">
-                <!-- Data load aagum varai empty aaga irukkum -->
-                <h1 class="title" id="detailTitle"></h1>
-                <span class="category-tag" id="detailCategory"></span>
-                
-                <p class="section-label">AI Photo Prompt String</p>
-                <div class="prompt-container" id="promptBox">
-                    <p class="prompt-text" id="detailPrompt"></p>
-                    <button class="read-more-btn" id="readMoreBtn" onclick="togglePrompt()">
-                        <span>Read More</span>
-                        <svg style="width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:3; margin-left:2px;" viewBox="0 0 24 24"><path id="arrowPath" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                </div>
-                
-                <div class="actions-grid">
-                    <button class="action-btn copy-btn" id="copyBtn">
-                        <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                        Copy Prompt
-                    </button>
-                    <button class="action-btn share-btn" id="shareBtn">
-                        <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                        Share Outfit
-                    </button>
-                </div>
-            </div>
-        </div>
+<script type="module">
+    import {initializeApp} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import {getFirestore,collection,getDocs,doc,updateDoc,increment} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    
+    const firebaseConfig={apiKey:"AIzaSyBJgk2EzELMAeW0dhw2hyTIxtp6f7Tbo8M",authDomain:"thivash-32c14.firebaseapp.com",projectId:"thivash-32c14",storageBucket:"thivash-32c14.firebasestorage.app",messagingSenderId:"842996953973",appId:"1:842996953973:web:1ebeebc76aa8a2a4ab993c"};
+    const db=getFirestore(initializeApp(firebaseConfig));
+    const q=new URLSearchParams(location.search).get("q")||"";
+    const s = document.getElementById("s");
+    const g = document.getElementById("g");
+    
+    s.value=q;
 
-        <section class="related-section">
-            <!-- Section 1: Fetching by First Name / Similarity -->
-            <h2 class="related-title" id="similarTitle" style="display: none;">
-                <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                Similar Styles
-            </h2>
-            <div class="related-grid" id="relatedNameGrid"></div>
+    const fullHeart = `<svg width="20" height="20" viewBox="0 0 24 24" fill="red"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+    const emptyHeart = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
 
-            <!-- Section 2: Fetching by Category -->
-            <h2 class="related-title" id="categoryTitle" style="display: none; margin-top: 20px;">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                More in <span id="catTitleText" style="color: var(--accent-color);"></span>
-            </h2>
-            <div class="related-grid" id="relatedCategoryGrid"></div>
-        </section>
-    </main>
+    let arr=[];
+    const snap=await getDocs(collection(db,"styles"));
+    snap.forEach(d=>arr.push({id:d.id,...d.data()}));
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    function draw(list){
+        g.innerHTML="";
+        if(!list.length){g.innerHTML="<h3>No Results</h3>";return;}
+        list.forEach(it=>{
+            let liked=localStorage.getItem("liked_"+it.id);
+            g.innerHTML+=`<div class="card"><img loading="lazy" src="${it.image}" onclick="location.href='detail.html?id=${it.id}'"><div class="info"><b>${it.name}</b><br><button class="like" onclick="like('${it.id}',this)">${liked?fullHeart:emptyHeart} <span>${it.likes||0}</span></button></div></div>`
+        })
+    }
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyBJgk2EzELMAeW0dhw2hyTIxtp6f7Tbo8M",
-          authDomain: "thivash-32c14.firebaseapp.com",
-          projectId: "thivash-32c14",
-          storageBucket: "thivash-32c14.firebasestorage.app",
-          messagingSenderId: "842996953973",
-          appId: "1:842996953973:web:1ebeebc76aa8a2a4ab993c",
-          measurementId: "G-FQCXPWXLZ6"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    window.like=async(id,b)=>{
+        let l=localStorage.getItem("liked_"+id);
+        await updateDoc(doc(db,"styles",id),{likes:increment(l?-1:1)});
+        let sp=b.querySelector("span");
+        sp.textContent=+sp.textContent+(l?-1:1);
         
-        const urlParams = new URLSearchParams(window.location.search);
-        const styleId = urlParams.get('id');
-
-        let currentItem = null;
-
-        async function loadDetailPage() {
-            if(!styleId) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            const docRef = doc(db, "styles", styleId);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                currentItem = { id: docSnap.id, ...docSnap.data() };
-                renderDetails();
-                fetchRelatedData();
-            } else {
-                window.location.href = 'index.html';
-            }
+        if(l){
+            localStorage.removeItem("liked_"+id);
+            b.querySelector("svg").outerHTML = emptyHeart;
+        } else {
+            localStorage.setItem("liked_"+id,"1");
+            b.querySelector("svg").outerHTML = fullHeart;
         }
+    }
 
-        function renderDetails() {
-            document.getElementById('detailImg').src = currentItem.image;
-            document.getElementById('detailImg').alt = currentItem.name;
-            
-            document.getElementById('detailTitle').innerText = currentItem.name;
-            
-            const categoryEl = document.getElementById('detailCategory');
-            categoryEl.innerText = currentItem.category;
-            categoryEl.style.display = 'inline-block';
-            
-            const promptTextEl = document.getElementById('detailPrompt');
-            promptTextEl.innerText = currentItem.prompt;
-
-            setupLikeButton();
-
-            setTimeout(() => {
-                if(promptTextEl.scrollHeight > 75) {
-                    document.getElementById('readMoreBtn').style.display = 'inline-flex';
-                }
-            }, 50);
-
-            document.getElementById('copyBtn').onclick = () => copyPromptText(currentItem.prompt);
-            document.getElementById('shareBtn').onclick = () => shareOutfit(currentItem.name, currentItem.prompt);
-        }
-
-        function setupLikeButton() {
-            const hasLiked = localStorage.getItem(`liked_${currentItem.id}`) !== null;
-            const buttonClass = hasLiked ? 'like-btn liked' : 'like-btn';
-            const likesCount = currentItem.likes || 0;
-
-            const existingBtn = document.querySelector('.like-btn');
-            if(existingBtn) existingBtn.remove();
-
-            const likeBtn = document.createElement('button');
-            likeBtn.className = buttonClass;
-            likeBtn.innerHTML = `
-                <svg viewBox="0 0 24 24">
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                </svg>
-                <span class="like-count">${likesCount}</span>
-            `;
-            likeBtn.onclick = () => triggerLikeSystem(likeBtn);
-            document.getElementById('imageSection').appendChild(likeBtn);
-        }
-
-        async function triggerLikeSystem(btn) {
-            btn.disabled = true;
-            const isLiked = localStorage.getItem(`liked_${currentItem.id}`) !== null;
-            const styleRef = doc(db, "styles", currentItem.id);
-            const countSpan = btn.querySelector('.like-count');
-
-            try {
-                if(isLiked) {
-                    await updateDoc(styleRef, { likes: increment(-1) });
-                    localStorage.removeItem(`liked_${currentItem.id}`);
-                    btn.classList.remove('liked');
-                    currentItem.likes = (currentItem.likes || 1) - 1;
-                    countSpan.innerText = currentItem.likes;
-                } else {
-                    await updateDoc(styleRef, { likes: increment(1) });
-                    localStorage.setItem(`liked_${currentItem.id}`, 'true');
-                    btn.classList.add('liked');
-                    currentItem.likes = (currentItem.likes || 0) + 1;
-                    countSpan.innerText = currentItem.likes;
-                }
-            } catch(e) { console.error(e); }
-            finally { btn.disabled = false; }
-        }
-
-        window.togglePrompt = function() {
-            const container = document.getElementById('promptBox');
-            const btnSpan = document.getElementById('readMoreBtn').querySelector('span');
-            const arrow = document.getElementById('arrowPath');
-            
-            container.classList.toggle('expanded');
-            if(container.classList.contains('expanded')) {
-                btnSpan.innerText = "Read Less";
-                arrow.setAttribute('d', 'M19 15l-7-7-7 7');
-            } else {
-                btnSpan.innerText = "Read More";
-                arrow.setAttribute('d', 'M19 9l-7 7-7-7');
-            }
-        }
-
-        function copyPromptText(text) {
-            const btn = document.getElementById('copyBtn');
-            const origHTML = btn.innerHTML;
-            navigator.clipboard.writeText(text).then(() => {
-                btn.innerHTML = `✓ Prompt Copied!`;
-                btn.style.background = "#10b981";
-                setTimeout(() => {
-                    btn.innerHTML = origHTML;
-                    btn.style.background = "";
-                }, 2000);
-            });
-        }
-
-        // Direct Native Share only
-        function shareOutfit(name, prompt) {
-            const shareText = `Look at this AI outfit style: ${name}\n\nPrompt:\n"${prompt}"`;
-            
-            if (navigator.share) {
-                navigator.share({ 
-                    title: name, 
-                    text: shareText,
-                    url: window.location.href
-                }).catch(console.error);
-            } else {
-                alert("Direct sharing is not supported on your current browser.");
-            }
-        }
-
-        // Related Skeletons காட்டும் Function
-        function showRelatedSkeletons() {
-            const nameGrid = document.getElementById('relatedNameGrid');
-            const catGrid = document.getElementById('relatedCategoryGrid');
-            
-            // Titles-ஐ முன்கூட்டியே காட்டுகிறோம்
-            document.getElementById('similarTitle').style.display = 'flex';
-            document.getElementById('categoryTitle').style.display = 'flex';
-            document.getElementById('catTitleText').innerText = '...';
-
-            let skeletonCards = '';
-            for(let i=0; i<4; i++) { // லோடிங் ஆகும்போது 4 Dummy Skeleton கார்டுகள் வரும்
-                skeletonCards += `
-                    <div class="related-card" style="pointer-events: none;">
-                        <div class="related-img-box">
-                            <div class="skeleton"></div>
-                        </div>
-                        <div class="related-info" style="padding: 20px 15px;">
-                            <div class="skeleton" style="position: relative; height: 14px; width: 80%; border-radius: 4px;"></div>
-                        </div>
-                    </div>
-                `;
-            }
-            nameGrid.innerHTML = skeletonCards;
-            catGrid.innerHTML = skeletonCards;
-        }
-
-        async function fetchRelatedData() {
-            // Firebase-ல் டேட்டா எடுக்கும் முன் Skeleton Loading-ஐ காட்டுகிறோம்
-            showRelatedSkeletons();
-
-            const querySnapshot = await getDocs(collection(db, "styles"));
-            
-            const nameGrid = document.getElementById('relatedNameGrid');
-            const catGrid = document.getElementById('relatedCategoryGrid');
-            
-            // உண்மையான Category பெயரை செட் செய்கிறோம்
-            document.getElementById('catTitleText').innerText = currentItem.category;
-            
-            // Skeletons-ஐ Clear செய்துவிட்டு உண்மையான டேட்டாவை வைக்கப் போகிறோம்
-            nameGrid.innerHTML = '';
-            catGrid.innerHTML = '';
-            
-            let nameCount = 0;
-            let catCount = 0;
-
-            const currentNameParts = (currentItem.name || "").toLowerCase().split(' ');
-            const searchKeyword = currentNameParts.length > 0 ? currentNameParts[0] : "";
-            
-            querySnapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                if(docSnap.id === currentItem.id) return; 
-                
-                const itemNameLower = (data.name || "").toLowerCase();
-
-                // 1. Fetching ALL items by First Name match (No Limits)
-                if(searchKeyword && itemNameLower.includes(searchKeyword)) {
-                    nameCount++;
-                    nameGrid.appendChild(createRelatedCard(data, docSnap.id));
-                } 
-                // 2. Fetching ALL items by Category match (No Limits)
-                else if(data.category === currentItem.category) {
-                    catCount++;
-                    catGrid.appendChild(createRelatedCard(data, docSnap.id));
-                }
-            });
-
-            if(nameCount === 0) {
-                nameGrid.innerHTML = '<p style="color:var(--gray-text); font-size: 0.9rem;">No similar styles found based on name.</p>';
-            }
-            if(catCount === 0) {
-                catGrid.innerHTML = '<p style="color:var(--gray-text); font-size: 0.9rem;">No other styles found in this category.</p>';
-            }
-        }
-
-        function createRelatedCard(data, id) {
-            const card = document.createElement('div');
-            card.className = 'related-card';
-            card.onclick = () => window.location.href = `detail.html?id=${id}`;
-            card.innerHTML = `
-                <div class="related-img-box">
-                    <div class="skeleton"></div>
-                    <img src="${data.image}" alt="${data.name}" onload="this.classList.add('loaded'); this.previousElementSibling.style.display='none'">
-                </div>
-                <div class="related-info">${data.name}</div>
-            `;
-            return card;
-        }
-
-        loadDetailPage();
-    </script>
+    function filt(v){
+        v=v.toLowerCase();
+        draw(arr.filter(i=>(i.name||"").toLowerCase().includes(v)||(i.prompt||"").toLowerCase().includes(v)||(i.category||"").toLowerCase().includes(v)));
+    }
+    
+    filt(q);
+    s.oninput=e=>filt(e.target.value);
+    s.onkeydown=e=>{if(e.key==="Enter")location.href="results.html?q="+encodeURIComponent(s.value)};
+</script>
 </body>
 </html>
