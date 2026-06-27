@@ -211,7 +211,7 @@
             
             const categoryEl = document.getElementById('detailCategory');
             categoryEl.innerText = currentItem.category;
-            categoryEl.style.display = 'inline-block'; // Data vanthathum kaata
+            categoryEl.style.display = 'inline-block';
             
             const promptTextEl = document.getElementById('detailPrompt');
             promptTextEl.innerText = currentItem.prompt;
@@ -315,17 +315,46 @@
             }
         }
 
+        // Related Skeletons காட்டும் Function
+        function showRelatedSkeletons() {
+            const nameGrid = document.getElementById('relatedNameGrid');
+            const catGrid = document.getElementById('relatedCategoryGrid');
+            
+            // Titles-ஐ முன்கூட்டியே காட்டுகிறோம்
+            document.getElementById('similarTitle').style.display = 'flex';
+            document.getElementById('categoryTitle').style.display = 'flex';
+            document.getElementById('catTitleText').innerText = '...';
+
+            let skeletonCards = '';
+            for(let i=0; i<4; i++) { // லோடிங் ஆகும்போது 4 Dummy Skeleton கார்டுகள் வரும்
+                skeletonCards += `
+                    <div class="related-card" style="pointer-events: none;">
+                        <div class="related-img-box">
+                            <div class="skeleton"></div>
+                        </div>
+                        <div class="related-info" style="padding: 20px 15px;">
+                            <div class="skeleton" style="position: relative; height: 14px; width: 80%; border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            nameGrid.innerHTML = skeletonCards;
+            catGrid.innerHTML = skeletonCards;
+        }
+
         async function fetchRelatedData() {
+            // Firebase-ல் டேட்டா எடுக்கும் முன் Skeleton Loading-ஐ காட்டுகிறோம்
+            showRelatedSkeletons();
+
             const querySnapshot = await getDocs(collection(db, "styles"));
             
             const nameGrid = document.getElementById('relatedNameGrid');
             const catGrid = document.getElementById('relatedCategoryGrid');
             
-            // Set Titles
+            // உண்மையான Category பெயரை செட் செய்கிறோம்
             document.getElementById('catTitleText').innerText = currentItem.category;
-            document.getElementById('similarTitle').style.display = 'flex';
-            document.getElementById('categoryTitle').style.display = 'flex';
             
+            // Skeletons-ஐ Clear செய்துவிட்டு உண்மையான டேட்டாவை வைக்கப் போகிறோம்
             nameGrid.innerHTML = '';
             catGrid.innerHTML = '';
             
@@ -341,12 +370,12 @@
                 
                 const itemNameLower = (data.name || "").toLowerCase();
 
-                // 1. Fetching all items by First Name match
+                // 1. Fetching ALL items by First Name match (No Limits)
                 if(searchKeyword && itemNameLower.includes(searchKeyword)) {
                     nameCount++;
                     nameGrid.appendChild(createRelatedCard(data, docSnap.id));
                 } 
-                // 2. Fetching all items by Category match
+                // 2. Fetching ALL items by Category match (No Limits)
                 else if(data.category === currentItem.category) {
                     catCount++;
                     catGrid.appendChild(createRelatedCard(data, docSnap.id));
