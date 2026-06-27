@@ -164,7 +164,7 @@
         .error-state svg {
             width: 80px;
             height: 80px;
-            stroke: #ef4444; /* Changed to red to highlight error */
+            stroke: #ef4444; 
             margin-bottom: 20px;
         }
         .error-state h3 {
@@ -175,8 +175,27 @@
         .error-state p {
             color: var(--gray-text);
             font-size: 0.95rem;
+            margin-bottom: 20px;
         }
         
+        /* Refresh Button Style */
+        .refresh-btn {
+            background: var(--gradient-accent);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);
+        }
+        .refresh-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(79, 70, 229, 0.3);
+        }
+
         @media(max-width: 600px) {
             .logo { font-size: 2.6rem; }
             .gallery-grid { columns: 2; column-gap: 12px; }
@@ -203,7 +222,8 @@
 
     <main class="main-container">
         <div class="gallery-grid" id="galleryGrid">
-            </div>
+            <!-- Skeleton Grid load aagum idam -->
+        </div>
     </main>
 
     <script type="module">
@@ -233,18 +253,43 @@
             }
         });
 
+        // Function to show Skeleton Grid while data is loading
+        function showLoadingState() {
+            const grid = document.getElementById('galleryGrid');
+            grid.innerHTML = '';
+            // 6 Dummy Cards for Skeleton effect
+            for(let i=0; i<6; i++) {
+                grid.innerHTML += `
+                    <div class="card">
+                        <div class="img-container">
+                            <div class="skeleton"></div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
         async function fetchStyles() {
+            showLoadingState(); // Page open aagum pothu Skeleton grid kaatum
+
             try {
                 const querySnapshot = await getDocs(collection(db, "styles"));
                 allStyles = [];
                 querySnapshot.forEach((doc) => {
                     allStyles.push({ id: doc.id, ...doc.data() });
                 });
-                renderGallery(allStyles);
+                
+                if(allStyles.length === 0) {
+                    // Empty DB na Network Error-ye kaatamal No item sollanum.
+                    document.getElementById('galleryGrid').innerHTML = '<p style="text-align:center; grid-column:1/-1; color:var(--gray-text); padding: 40px 0;">No matching styles found.</p>';
+                } else {
+                    renderGallery(allStyles);
+                }
+
             } catch (error) {
                 console.error("Firebase fetch error:", error);
                 const grid = document.getElementById('galleryGrid');
-                // Pure Connection Error UI with Broken WiFi SVG
+                // Connection Error UI with Broken WiFi SVG & Refresh Button
                 grid.innerHTML = `
                     <div class="error-state">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -258,6 +303,7 @@
                         </svg>
                         <h3>Connection Error</h3>
                         <p>Please check your internet connection.</p>
+                        <button class="refresh-btn" onclick="window.location.reload()">Refresh Page</button>
                     </div>
                 `;
             }
@@ -268,7 +314,6 @@
             grid.innerHTML = '';
             
             if(items.length === 0) {
-                // Ithula vanthu search panni item illana mattum thaan varum
                 grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:var(--gray-text); padding: 40px 0;">No matching styles found.</p>';
                 return;
             }
