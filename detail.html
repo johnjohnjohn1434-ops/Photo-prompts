@@ -58,11 +58,11 @@
 
         .content-section { flex: 1.2; min-width: 300px; display: flex; flex-direction: column; justify-content: center; }
         .title { font-size: 2.2rem; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.5px; }
-        .category-tag { display: inline-block; background: rgba(79, 70, 229, 0.08); color: #4f46e5; font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; margin-bottom: 25px; align-self: flex-start; }
+        .category-tag { display: none; background: rgba(79, 70, 229, 0.08); color: #4f46e5; font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; margin-bottom: 25px; align-self: flex-start; }
         
         .section-label { font-size: 0.85rem; font-weight: 600; color: var(--gray-text); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
         
-        .prompt-container { background: var(--gray-light); border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; position: relative; margin-bottom: 25px; }
+        .prompt-container { background: var(--gray-light); border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; position: relative; margin-bottom: 25px; min-height: 80px; }
         .prompt-text { font-size: 0.98rem; line-height: 1.6; color: #334155; overflow: hidden; transition: max-height 0.4s ease; max-height: 75px; }
         .prompt-container.expanded .prompt-text { max-height: 500px; }
         .read-more-btn { background: none; border: none; color: var(--accent-color); font-weight: 600; font-size: 0.85rem; cursor: pointer; margin-top: 10px; display: none; align-items: center; gap: 4px; }
@@ -120,12 +120,13 @@
             </div>
             
             <div class="content-section">
-                <h1 class="title" id="detailTitle">Loading...</h1>
-                <span class="category-tag" id="detailCategory">...</span>
+                <!-- Data load aagum varai empty aaga irukkum -->
+                <h1 class="title" id="detailTitle"></h1>
+                <span class="category-tag" id="detailCategory"></span>
                 
                 <p class="section-label">AI Photo Prompt String</p>
                 <div class="prompt-container" id="promptBox">
-                    <p class="prompt-text" id="detailPrompt">Loading prompt string configuration details...</p>
+                    <p class="prompt-text" id="detailPrompt"></p>
                     <button class="read-more-btn" id="readMoreBtn" onclick="togglePrompt()">
                         <span>Read More</span>
                         <svg style="width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:3; margin-left:2px;" viewBox="0 0 24 24"><path id="arrowPath" d="M19 9l-7 7-7-7"/></svg>
@@ -147,16 +148,16 @@
 
         <section class="related-section">
             <!-- Section 1: Fetching by First Name / Similarity -->
-            <h2 class="related-title">
+            <h2 class="related-title" id="similarTitle" style="display: none;">
                 <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
                 Similar Styles
             </h2>
             <div class="related-grid" id="relatedNameGrid"></div>
 
             <!-- Section 2: Fetching by Category -->
-            <h2 class="related-title" style="margin-top: 20px;">
+            <h2 class="related-title" id="categoryTitle" style="display: none; margin-top: 20px;">
                 <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                More in <span id="catTitleText" style="color: var(--accent-color);">Category</span>
+                More in <span id="catTitleText" style="color: var(--accent-color);"></span>
             </h2>
             <div class="related-grid" id="relatedCategoryGrid"></div>
         </section>
@@ -205,8 +206,12 @@
         function renderDetails() {
             document.getElementById('detailImg').src = currentItem.image;
             document.getElementById('detailImg').alt = currentItem.name;
+            
             document.getElementById('detailTitle').innerText = currentItem.name;
-            document.getElementById('detailCategory').innerText = currentItem.category;
+            
+            const categoryEl = document.getElementById('detailCategory');
+            categoryEl.innerText = currentItem.category;
+            categoryEl.style.display = 'inline-block';
             
             const promptTextEl = document.getElementById('detailPrompt');
             promptTextEl.innerText = currentItem.prompt;
@@ -295,61 +300,83 @@
             });
         }
 
+        // Direct Native Share only
         function shareOutfit(name, prompt) {
-            const btn = document.getElementById('shareBtn');
-            const origHTML = btn.innerHTML;
             const shareText = `Look at this AI outfit style: ${name}\n\nPrompt:\n"${prompt}"`;
             
             if (navigator.share) {
-                navigator.share({ title: name, text: shareText }).catch(console.error);
+                navigator.share({ 
+                    title: name, 
+                    text: shareText,
+                    url: window.location.href
+                }).catch(console.error);
             } else {
-                navigator.clipboard.writeText(window.location.href).then(() => {
-                    btn.innerHTML = `✓ Link Copied!`;
-                    btn.style.background = "#000";
-                    btn.style.color = "#fff";
-                    setTimeout(() => {
-                        btn.innerHTML = origHTML;
-                        btn.style.background = "";
-                        btn.style.color = "";
-                    }, 2000);
-                });
+                alert("Direct sharing is not supported on your current browser.");
             }
         }
 
+        // Related Skeletons காட்டும் Function
+        function showRelatedSkeletons() {
+            const nameGrid = document.getElementById('relatedNameGrid');
+            const catGrid = document.getElementById('relatedCategoryGrid');
+            
+            // Titles-ஐ முன்கூட்டியே காட்டுகிறோம்
+            document.getElementById('similarTitle').style.display = 'flex';
+            document.getElementById('categoryTitle').style.display = 'flex';
+            document.getElementById('catTitleText').innerText = '...';
+
+            let skeletonCards = '';
+            for(let i=0; i<4; i++) { // லோடிங் ஆகும்போது 4 Dummy Skeleton கார்டுகள் வரும்
+                skeletonCards += `
+                    <div class="related-card" style="pointer-events: none;">
+                        <div class="related-img-box">
+                            <div class="skeleton"></div>
+                        </div>
+                        <div class="related-info" style="padding: 20px 15px;">
+                            <div class="skeleton" style="position: relative; height: 14px; width: 80%; border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            nameGrid.innerHTML = skeletonCards;
+            catGrid.innerHTML = skeletonCards;
+        }
+
         async function fetchRelatedData() {
+            // Firebase-ல் டேட்டா எடுக்கும் முன் Skeleton Loading-ஐ காட்டுகிறோம்
+            showRelatedSkeletons();
+
             const querySnapshot = await getDocs(collection(db, "styles"));
             
             const nameGrid = document.getElementById('relatedNameGrid');
             const catGrid = document.getElementById('relatedCategoryGrid');
             
-            // Setting Category name in title
+            // உண்மையான Category பெயரை செட் செய்கிறோம்
             document.getElementById('catTitleText').innerText = currentItem.category;
             
+            // Skeletons-ஐ Clear செய்துவிட்டு உண்மையான டேட்டாவை வைக்கப் போகிறோம்
             nameGrid.innerHTML = '';
             catGrid.innerHTML = '';
             
             let nameCount = 0;
             let catCount = 0;
 
-            // Extract the first word from current item name to find similar items
             const currentNameParts = (currentItem.name || "").toLowerCase().split(' ');
             const searchKeyword = currentNameParts.length > 0 ? currentNameParts[0] : "";
             
             querySnapshot.forEach((docSnap) => {
                 const data = docSnap.data();
-                
-                // Skip the currently viewing item
                 if(docSnap.id === currentItem.id) return; 
                 
                 const itemNameLower = (data.name || "").toLowerCase();
 
-                // 1. Check for Name Match (First word similarity)
-                if(searchKeyword && itemNameLower.includes(searchKeyword) && nameCount < 4) {
+                // 1. Fetching ALL items by First Name match (No Limits)
+                if(searchKeyword && itemNameLower.includes(searchKeyword)) {
                     nameCount++;
                     nameGrid.appendChild(createRelatedCard(data, docSnap.id));
                 } 
-                // 2. Check for Category Match
-                else if(data.category === currentItem.category && catCount < 4) {
+                // 2. Fetching ALL items by Category match (No Limits)
+                else if(data.category === currentItem.category) {
                     catCount++;
                     catGrid.appendChild(createRelatedCard(data, docSnap.id));
                 }
@@ -363,7 +390,6 @@
             }
         }
 
-        // Helper function to create related cards with skeleton loading
         function createRelatedCard(data, id) {
             const card = document.createElement('div');
             card.className = 'related-card';
