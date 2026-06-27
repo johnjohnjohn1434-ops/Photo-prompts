@@ -99,7 +99,7 @@
         
         .img-container { position: relative; width: 100%; background: #f1f5f9; display: block; overflow: hidden; border-radius: 24px; min-height: 250px; }
         
-        .card img { width: 100%; height: auto; display: block; cursor: pointer; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease; opacity: 0; position: relative; z-index: 2; }
+        .card img { width: 100%; height: auto; display: block; cursor: grab; transition: transform .35s ease, opacity .4s ease; opacity: 0; position: relative; z-index: 2; touch-action:none; user-select:none; } .card img:active{cursor:grabbing;}
         .card img.loaded { opacity: 1; }
         .card:hover img { transform: scale(1.05); }
 
@@ -416,5 +416,14 @@
 
         fetchStyles();
     </script>
-</body>
+
+<script>
+document.addEventListener('pointerdown',e=>{
+ const img=e.target.closest('.card img'); if(!img)return;
+ let sy=e.clientY, moved=false;
+ const mv=ev=>{const dy=Math.max(0,ev.clientY-sy); if(dy>2)moved=true; img.style.transition='transform .08s linear'; img.style.transform=`translateY(${dy}px)`;}
+ const up=()=>{img.style.transition='transform .28s ease'; img.style.transform='translateY(0)'; removeEventListener('pointermove',mv);removeEventListener('pointerup',up);}
+ addEventListener('pointermove',mv);addEventListener('pointerup',up);
+});
+</script></body>
 </html>
