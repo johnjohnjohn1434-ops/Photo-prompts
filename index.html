@@ -23,7 +23,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); -webkit-font-smoothing: antialiased; background-image: radial-gradient(circle at top right, rgba(79, 70, 229, 0.04), transparent 400px); }
         
-        header { padding: 40px 20px 30px 20px; text-align: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
+        header { padding: 40px 20px 30px 20px; text-align: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color); position: static; top: 0; z-index: 100; }
         .logo { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-style: italic; letter-spacing: -0.5px; margin-bottom: 25px; background: linear-gradient(to right, #0f172a, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         .search-container { max-width: 520px; margin: 0 auto 30px auto; position: relative; }
@@ -124,11 +124,11 @@
 <body>
 
     <header>
-        <div class="logo">Hansitha Style</div>
+        
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Style name illa prompt search pannunga...">
         </div>
-        <div class="categories">
+        <div class="categories" style="display:none">
             <button class="cat-btn active" onclick="filterCategory('All')">Home</button>
             <button class="cat-btn" onclick="filterCategory('Women')">Women</button>
             <button class="cat-btn" onclick="filterCategory('Men')">Men</button>
@@ -190,7 +190,7 @@
                             </svg>
                             <span class="like-count">${likes}</span>
                         </button>
-                        <img src="${item.image}" alt="${item.name}" onclick="navigateToDetail('${item.id}')">
+                        <img loading="lazy" src="${item.image}" alt="${item.name}" onclick="navigateToDetail('${item.id}')">
                     </div>
                 `;
                 grid.appendChild(card);
@@ -245,10 +245,19 @@
         }
 
         document.getElementById('searchInput').addEventListener('input', (e) => {
-            const searchKey = e.target.value.toLowerCase();
-            const filtered = allStyles.filter(item => item.name.toLowerCase().includes(searchKey) || item.prompt.toLowerCase().includes(searchKey));
+            const searchKey = e.target.value.trim().toLowerCase();
+            const filtered = allStyles.filter(item => (item.name||'').toLowerCase().includes(searchKey) || (item.prompt||'').toLowerCase().includes(searchKey) || (item.category||'').toLowerCase().includes(searchKey));
             renderGallery(filtered);
         });
+
+        
+document.getElementById('searchInput').addEventListener('keydown',(e)=>{
+ if(e.key==='Enter'){
+  const q=e.target.value.trim();
+  if(q) window.location.href='results.html?q='+encodeURIComponent(q);
+ }
+});
+
 
         window.filterCategory = function(category) {
             document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
