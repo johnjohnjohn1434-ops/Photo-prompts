@@ -151,7 +151,7 @@
         .like-btn.liked { background: rgba(239, 68, 68, 0.08); color: var(--like-color); border-color: rgba(239, 68, 68, 0.15); }
         .like-btn.liked svg { fill: var(--like-color); stroke: var(--like-color); transform: scale(1.1); }
 
-        /* Updated Network Error UI Styles */
+        /* Network Error UI Styles */
         .error-state {
             grid-column: 1 / -1;
             display: flex;
@@ -257,7 +257,6 @@
         function showLoadingState() {
             const grid = document.getElementById('galleryGrid');
             grid.innerHTML = '';
-            // 6 Dummy Cards for Skeleton effect
             for(let i=0; i<6; i++) {
                 grid.innerHTML += `
                     <div class="card">
@@ -269,8 +268,29 @@
             }
         }
 
+        // Function to show Network Error with Refresh Button
+        function showNetworkError() {
+            const grid = document.getElementById('galleryGrid');
+            grid.innerHTML = `
+                <div class="error-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="2" y1="2" x2="22" y2="22"></line>
+                        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+                        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+                        <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+                        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                    </svg>
+                    <h3>Connection Error</h3>
+                    <p>Please check your internet connection.</p>
+                    <button class="refresh-btn" onclick="window.location.reload()">Refresh Page</button>
+                </div>
+            `;
+        }
+
         async function fetchStyles() {
-            showLoadingState(); // Page open aagum pothu Skeleton grid kaatum
+            showLoadingState(); 
 
             try {
                 const querySnapshot = await getDocs(collection(db, "styles"));
@@ -279,33 +299,16 @@
                     allStyles.push({ id: doc.id, ...doc.data() });
                 });
                 
+                // Data empty-aaga vanthalum 'No matching' varakudathu, Network Error thaan varanum
                 if(allStyles.length === 0) {
-                    // Empty DB na Network Error-ye kaatamal No item sollanum.
-                    document.getElementById('galleryGrid').innerHTML = '<p style="text-align:center; grid-column:1/-1; color:var(--gray-text); padding: 40px 0;">No matching styles found.</p>';
+                    showNetworkError();
                 } else {
                     renderGallery(allStyles);
                 }
 
             } catch (error) {
                 console.error("Firebase fetch error:", error);
-                const grid = document.getElementById('galleryGrid');
-                // Connection Error UI with Broken WiFi SVG & Refresh Button
-                grid.innerHTML = `
-                    <div class="error-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="2" y1="2" x2="22" y2="22"></line>
-                            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
-                            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
-                            <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
-                            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
-                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                            <line x1="12" y1="20" x2="12.01" y2="20"></line>
-                        </svg>
-                        <h3>Connection Error</h3>
-                        <p>Please check your internet connection.</p>
-                        <button class="refresh-btn" onclick="window.location.reload()">Refresh Page</button>
-                    </div>
-                `;
+                showNetworkError(); // Catch error vanthalum Network Error varanum
             }
         }
 
@@ -313,6 +316,7 @@
             const grid = document.getElementById('galleryGrid');
             grid.innerHTML = '';
             
+            // Search pannum pothu ethuvum illana mattum Intha message varum
             if(items.length === 0) {
                 grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:var(--gray-text); padding: 40px 0;">No matching styles found.</p>';
                 return;
