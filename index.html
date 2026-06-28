@@ -75,6 +75,27 @@
         
         .main-container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
         
+        /* Video Banner Styles */
+        .video-banner-container {
+            width: 100%;
+            margin-bottom: 30px;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            display: none; /* Hidden by default, activated via JS */
+        }
+        
+        .video-banner-container video {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 24px;
+            object-fit: cover;
+        }
+
         .gallery-grid { 
             columns: 2;
             column-gap: 24px;
@@ -184,6 +205,8 @@
             .card { margin-bottom: 12px; border-radius: 16px; }
             .img-container { border-radius: 16px; min-height: 150px; }
             .like-btn { top: 10px; right: 10px; padding: 6px 12px; font-size: 0.75rem; }
+            .video-banner-container { margin-bottom: 20px; border-radius: 16px; }
+            .video-banner-container video { border-radius: 16px; }
         }
     </style>
     <link rel="manifest" href="manifest.json">
@@ -205,13 +228,19 @@
     </header>
 
     <main class="main-container">
+        
+        <div id="videoBannerContainer" class="video-banner-container">
+            <video id="homeVideoBanner" autoplay muted loop playsinline></video>
+        </div>
+
         <div class="gallery-grid" id="galleryGrid">
         </div>
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // Added getDoc for fetching single video document
+        import { getFirestore, collection, getDocs, doc, updateDoc, increment, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // PWA Install Logic
         let deferredPrompt;
@@ -257,6 +286,41 @@
                 header.classList.remove('scrolled');
             }
         });
+
+        /* ---- Dynamic Video Banner Logic ---- */
+        async function loadVideoBanner() {
+            const COOLDOWN_MS = 3 * 60 * 1000; // 3 minutes cooldown
+            const lastSeen = localStorage.getItem('lastVideoSeenTime');
+            const now = Date.now();
+
+            // Check if 3 minutes have passed since the video was last seen
+            if (lastSeen && (now - parseInt(lastSeen, 10)) < COOLDOWN_MS) {
+                return; // Hide video, gallery moves up naturally
+            }
+
+            try {
+                // Fetching the video URL from a "settings" collection, document "home_banner"
+                // The Admin panel should upload the video and store its URL in this path under a "videoUrl" field.
+                const bannerRef = doc(db, "settings", "home_banner");
+                const bannerSnap = await getDoc(bannerRef);
+
+                if (bannerSnap.exists()) {
+                    const data = bannerSnap.data();
+                    if (data.videoUrl && data.videoUrl.trim() !== "") {
+                        const container = document.getElementById('videoBannerContainer');
+                        const video = document.getElementById('homeVideoBanner');
+                        
+                        video.src = data.videoUrl;
+                        container.style.display = 'block'; // Show the container only if video exists
+                        
+                        // Save the current timestamp to localStorage
+                        localStorage.setItem('lastVideoSeenTime', now.toString());
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading video banner:", err);
+            }
+        }
 
         function showLoadingState() {
             const grid = document.getElementById('galleryGrid');
@@ -399,6 +463,8 @@
             else { renderGallery(allStyles.filter(item => item.category === category)); }
         }
 
+        // Initialize features
+        loadVideoBanner();
         fetchStyles();
     </script>
     <script>
