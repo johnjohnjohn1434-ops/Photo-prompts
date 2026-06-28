@@ -151,51 +151,56 @@
         .like-btn.liked { background: rgba(239, 68, 68, 0.08); color: var(--like-color); border-color: rgba(239, 68, 68, 0.15); }
         .like-btn.liked svg { fill: var(--like-color); stroke: var(--like-color); transform: scale(1.1); }
 
-        /* புதிய Error State Design */
-.error-state {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    width: 100%;
-    margin: 50px auto;
-    padding: 20px;
-    background: #fff;
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    max-width: 300px; /* இதுதான் அந்த சின்னதாக, அழகாக காட்டும் */
-}
-.error-state svg {
-    width: 40px;
-    height: 40px;
-    stroke: #ef4444;
-    margin-bottom: 10px;
-}
-.error-state h3 {
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-}
-.error-state p {
-    font-size: 0.85rem;
-    color: var(--gray-text);
-    margin-bottom: 15px;
-}
-.refresh-btn {
-    background: var(--gradient-accent);
-    color: #fff;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
+        .error-state {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            width: 100%;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            max-width: 300px;
+        }
+        .error-state svg {
+            width: 40px;
+            height: 40px;
+            stroke: #ef4444;
+            margin-bottom: 10px;
+        }
+        .error-state h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .error-state p {
+            font-size: 0.85rem;
+            color: var(--gray-text);
+            margin-bottom: 15px;
+        }
+        .refresh-btn {
+            background: var(--gradient-accent);
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
         .refresh-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 12px 25px rgba(79, 70, 229, 0.3);
         }
+
+        /* Popup Styles */
+        #popupOverlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .popup-card { background: white; width: 90%; max-width: 400px; padding: 20px; border-radius: 20px; position: relative; text-align: center; }
+        .close-btn { position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 1.5rem; display: none; }
+        .countdown { font-size: 0.8rem; margin-bottom: 10px; color: #666; }
+        .install-btn { background: #7c3aed; color: white; padding: 15px; border: none; border-radius: 10px; width: 100%; font-weight: bold; margin-top: 15px; cursor: pointer; }
 
         @media(max-width: 600px) {
             .logo { font-size: 2.6rem; }
@@ -209,6 +214,15 @@
 <meta name="theme-color" content="#4f46e5">
 </head>
 <body>
+
+    <div id="popupOverlay">
+        <div class="popup-card">
+            <span class="close-btn" id="closePopup" onclick="document.getElementById('popupOverlay').style.display='none'">✕</span>
+            <div class="countdown" id="countdownText">You can close this ad in 15 seconds</div>
+            <video src="video.mp4" autoplay muted playsinline controls style="width:100%"></video>
+            <button class="install-btn" id="installAppBtn">📲 Install App</button>
+        </div>
+    </div>
 
     <header id="main-header">
         <div class="logo">Hansitha Style</div>
@@ -225,13 +239,43 @@
 
     <main class="main-container">
         <div class="gallery-grid" id="galleryGrid">
-            <!-- Skeleton Grid load aagum idam -->
         </div>
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // PWA Install Logic
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        document.getElementById('installAppBtn').addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                });
+            } else {
+                window.location.href = 'https://johnjohnjohn1434-ops.github.io/Photo-prompts/';
+            }
+        });
+
+        // Countdown Logic
+        let timeLeft = 15;
+        const timer = setInterval(() => {
+            timeLeft--;
+            if (timeLeft > 0) {
+                document.getElementById('countdownText').innerText = `You can close this ad in ${timeLeft} seconds`;
+            } else {
+                clearInterval(timer);
+                document.getElementById('countdownText').innerText = "You can now close this ad";
+                document.getElementById('closePopup').style.display = 'block';
+            }
+        }, 1000);
 
         const firebaseConfig = {
           apiKey: "AIzaSyBJgk2EzELMAeW0dhw2hyTIxtp6f7Tbo8M",
@@ -256,7 +300,6 @@
             }
         });
 
-        // Function to show Skeleton Grid while data is loading
         function showLoadingState() {
             const grid = document.getElementById('galleryGrid');
             grid.innerHTML = '';
@@ -271,63 +314,53 @@
             }
         }
 
-        // Function to show Network Error with Refresh Button
         function showNetworkError() {
-    const grid = document.getElementById('galleryGrid');
-    // column-span பிரச்சனை வராமல் இருக்க, grid-ஐ மட்டும் கிளீன் செய்து சென்டர் டிசைன் கொண்டு வருகிறோம்
-    grid.style.display = 'block'; 
-    grid.innerHTML = `
-        <div class="error-state" style="margin: 40px auto;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="2" y1="2" x2="22" y2="22"></line>
-                <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
-                <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
-                <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
-                <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
-                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                <line x1="12" y1="20" x2="12.01" y2="20"></line>
-            </svg>
-            <h3>Connection Error</h3>
-            <p>Please check your internet connection.</p>
-            <button class="refresh-btn" onclick="window.location.reload()">Refresh Page</button>
-        </div>
-    `;
-}
-
+            const grid = document.getElementById('galleryGrid');
+            grid.style.display = 'block'; 
+            grid.innerHTML = `
+                <div class="error-state" style="margin: 40px auto;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="2" y1="2" x2="22" y2="22"></line>
+                        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+                        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+                        <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+                        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                    </svg>
+                    <h3>Connection Error</h3>
+                    <p>Please check your internet connection.</p>
+                    <button class="refresh-btn" onclick="window.location.reload()">Refresh Page</button>
+                </div>
+            `;
+        }
 
         async function fetchStyles() {
             showLoadingState(); 
-
             try {
                 const querySnapshot = await getDocs(collection(db, "styles"));
                 allStyles = [];
                 querySnapshot.forEach((doc) => {
                     allStyles.push({ id: doc.id, ...doc.data() });
                 });
-                
-                // Data empty-aaga vanthalum 'No matching' varakudathu, Network Error thaan varanum
                 if(allStyles.length === 0) {
                     showNetworkError();
                 } else {
                     renderGallery(allStyles);
                 }
-
             } catch (error) {
                 console.error("Firebase fetch error:", error);
-                showNetworkError(); // Catch error vanthalum Network Error varanum
+                showNetworkError();
             }
         }
 
         function renderGallery(items) {
             const grid = document.getElementById('galleryGrid');
             grid.innerHTML = '';
-            
-            // Search pannum pothu ethuvum illana mattum Intha message varum
             if(items.length === 0) {
                 grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:var(--gray-text); padding:40px 0;">Connection Error<br>Please check your internet.</p>';
                 return;
             }
-            
             items.forEach(item => {
                 const likes = item.likes || 0;
                 const hasLiked = localStorage.getItem(`liked_${item.id}`) !== null;
@@ -335,7 +368,6 @@
 
                 const card = document.createElement('div');
                 card.className = 'card';
-                
                 card.innerHTML = `
                     <div class="img-container">
                         <div class="skeleton"></div>
@@ -363,7 +395,6 @@
             const isLiked = localStorage.getItem(`liked_${id}`) !== null;
             try {
                 const styleRef = doc(db, "styles", id);
-                
                 if (isLiked) {
                     await updateDoc(styleRef, { likes: increment(-1) });
                     localStorage.removeItem(`liked_${id}`);
@@ -385,7 +416,6 @@
             if(targetIdx !== -1) {
                 allStyles[targetIdx].likes = (allStyles[targetIdx].likes || 0) + valueChange;
             }
-
             const selector = `button[data-id="${id}"]`;
             const buttons = document.querySelectorAll(selector);
             buttons.forEach(button => {
