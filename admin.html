@@ -9,13 +9,21 @@
         body { background-color: #f4f4f4; font-family: 'Poppins', sans-serif; padding: 30px 20px; }
         .container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
         .admin-box { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .highlight-box { border: 2px solid #4f46e5; background: #fafbff; }
         h2, h3 { text-align: center; margin-bottom: 25px; color: #111; }
         .admin-form { display: flex; flex-direction: column; gap: 20px; }
         .admin-form input, .admin-form select, .admin-form textarea { padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; outline: none; }
         .file-label { font-size: 0.9rem; color: #666; margin-bottom: -15px; font-weight: 500; }
-        .submit-btn { background: #000; color: #fff; border: none; padding: 14px; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: 500; }
-        .submit-btn:disabled { background: #666; }
+        .submit-btn { background: #000; color: #fff; border: none; padding: 14px; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: 500; transition: 0.3s; }
+        .submit-btn:disabled { background: #666 !important; cursor: not-allowed; }
         
+        .btn-group { display: flex; gap: 10px; }
+        .btn-group .submit-btn { flex: 1; }
+        .btn-primary { background: #4f46e5; }
+        .btn-primary:hover { background: #4338ca; }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+
         /* List section styling */
         .items-list { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .list-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -29,6 +37,27 @@
 <body>
 
     <div class="container">
+        
+        <div class="admin-box highlight-box">
+            <h2>Manage Home Page Video</h2>
+            <form class="admin-form" id="videoForm">
+                <span class="file-label">Upload New Video (MP4 recommended, Max 50MB):</span>
+                <input type="file" id="videoFile" accept="video/mp4,video/webm,video/*">
+                
+                <div class="btn-group">
+                    <button type="submit" id="uploadVideoBtn" class="submit-btn btn-primary">Upload & Set Video</button>
+                    <button type="button" id="removeVideoBtn" class="submit-btn btn-danger">Remove Video</button>
+                </div>
+                
+                <p id="videoUploadStatus" style="text-align: center; font-size: 0.9rem; color: #4f46e5; font-weight: 500; margin: 0;"></p>
+                
+                <div id="videoPreviewContainer" style="display: none; text-align: center; margin-top: 10px;">
+                    <span class="file-label" style="display: block; margin-bottom: 10px; color: #4f46e5;">Currently Active Video on Website:</span>
+                    <video id="activeVideoElem" src="" controls style="width: 100%; max-width: 400px; border-radius: 8px; background: #000;"></video>
+                </div>
+            </form>
+        </div>
+
         <div class="admin-box">
             <h2 id="formTitle">Upload New Style</h2>
             <form class="admin-form" id="adminForm">
@@ -63,14 +92,17 @@
                     </tr>
                 </thead>
                 <tbody id="itemsTableBody">
-                    </tbody>
+                </tbody>
             </table>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // Added setDoc and getDoc for handling the settings collection
+        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // Added Firebase Storage for handling video uploads
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBJgk2EzELMAeW0dhw2hyTIxtp6f7Tbo8M",
@@ -84,7 +116,128 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const storage = getStorage(app);
         let currentStyles = [];
+
+        /* =========================================
+           HOME PAGE VIDEO BANNER LOGIC
+           ========================================= */
+
+        // 1. Load current video on admin panel load
+        async function loadCurrentVideoBanner() {
+            try {
+                const bannerRef = doc(db, "settings", "home_banner");
+                const bannerSnap = await getDoc(bannerRef);
+                
+                const previewContainer = document.getElementById('videoPreviewContainer');
+                const videoElem = document.getElementById('activeVideoElem');
+
+                if (bannerSnap.exists() && bannerSnap.data().videoUrl) {
+                    videoElem.src = bannerSnap.data().videoUrl;
+                    previewContainer.style.display = 'block';
+                } else {
+                    videoElem.src = "";
+                    previewContainer.style.display = 'none';
+                }
+            } catch (err) {
+                console.error("Error fetching video banner: ", err);
+            }
+        }
+
+        // 2. Handle Video Upload
+        document.getElementById('videoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('videoFile');
+            
+            if (fileInput.files.length === 0) {
+                return alert("Please select a video file to upload!");
+            }
+
+            const file = fileInput.files[0];
+            // Simple validation to prevent gigantic files (50MB limit)
+            if (file.size > 50 * 1024 * 1024) {
+                return alert("File is too large! Please select a video under 50MB.");
+            }
+
+            const uploadBtn = document.getElementById('uploadVideoBtn');
+            const statusText = document.getElementById('videoUploadStatus');
+            
+            uploadBtn.disabled = true;
+            statusText.style.color = '#4f46e5';
+            statusText.innerText = "Initializing upload...";
+
+            try {
+                // Upload to Firebase Storage
+                const storageRef = ref(storage, 'banners/home_video_' + Date.now());
+                const uploadTask = uploadBytesResumable(storageRef, file);
+
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        statusText.innerText = `Uploading: ${Math.round(progress)}% completed...`;
+                    }, 
+                    (error) => {
+                        console.error("Upload error:", error);
+                        statusText.style.color = '#ef4444';
+                        statusText.innerText = "Upload failed! Check console.";
+                        uploadBtn.disabled = false;
+                    }, 
+                    async () => {
+                        // Upload completed successfully, get the URL
+                        statusText.innerText = "Processing video URL...";
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        
+                        // Save URL to Firestore
+                        await setDoc(doc(db, "settings", "home_banner"), {
+                            videoUrl: downloadURL,
+                            updatedAt: new Date()
+                        });
+                        
+                        statusText.style.color = '#10b981'; // green
+                        statusText.innerText = "Video updated successfully!";
+                        fileInput.value = "";
+                        uploadBtn.disabled = false;
+                        
+                        loadCurrentVideoBanner(); // Refresh preview
+                        
+                        setTimeout(() => { statusText.innerText = ""; }, 4000);
+                    }
+                );
+            } catch (err) {
+                console.error(err);
+                alert("Something went wrong!");
+                uploadBtn.disabled = false;
+            }
+        });
+
+        // 3. Handle Video Removal
+        document.getElementById('removeVideoBtn').addEventListener('click', async () => {
+            if (!confirm("Are you sure you want to remove the Home Page video? This will hide the banner entirely.")) return;
+            
+            const btn = document.getElementById('removeVideoBtn');
+            btn.disabled = true;
+
+            try {
+                await setDoc(doc(db, "settings", "home_banner"), {
+                    videoUrl: "", // Clear URL to hide on website
+                    updatedAt: new Date()
+                });
+                alert("Video removed successfully! The banner is now hidden on the website.");
+                loadCurrentVideoBanner();
+            } catch (err) {
+                console.error(err);
+                alert("Failed to remove video.");
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        loadCurrentVideoBanner();
+
+
+        /* =========================================
+           IMAGE STYLE UPLOAD / EDIT LOGIC
+           ========================================= */
 
         function compressAndConvertToBase64(file) {
             return new Promise((resolve, reject) => {
@@ -217,6 +370,7 @@
                 alert("Process Failed!");
             } finally {
                 uploadBtn.disabled = false;
+                if(!editId) uploadBtn.innerText = "Upload Style to Website"; // reset normal text
             }
         });
 
