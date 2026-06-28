@@ -166,41 +166,17 @@
             border: 1px solid var(--border-color);
             max-width: 300px;
         }
-        .error-state svg {
-            width: 40px;
-            height: 40px;
-            stroke: #ef4444;
-            margin-bottom: 10px;
-        }
+        
         .error-state h3 {
             font-size: 1.1rem;
             margin-bottom: 5px;
         }
+        
         .error-state p {
             font-size: 0.85rem;
             color: var(--gray-text);
-            margin-bottom: 15px;
+            margin-bottom: 0;
         }
-        .refresh-btn {
-            background: var(--gradient-accent);
-            color: #fff;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            cursor: pointer;
-        }
-        .refresh-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(79, 70, 229, 0.3);
-        }
-
-        /* Popup Styles */
-        #popupOverlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .popup-card { background: white; width: 90%; max-width: 400px; padding: 20px; border-radius: 20px; position: relative; text-align: center; }
-        .close-btn { position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 1.5rem; display: none; }
-        .countdown { font-size: 0.8rem; margin-bottom: 10px; color: #666; }
-        .install-btn { background: #7c3aed; color: white; padding: 15px; border: none; border-radius: 10px; width: 100%; font-weight: bold; margin-top: 15px; cursor: pointer; }
 
         @media(max-width: 600px) {
             .logo { font-size: 2.6rem; }
@@ -211,18 +187,9 @@
         }
     </style>
     <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#4f46e5">
+    <meta name="theme-color" content="#4f46e5">
 </head>
 <body>
-
-    <div id="popupOverlay">
-        <div class="popup-card">
-            <span class="close-btn" id="closePopup" onclick="document.getElementById('popupOverlay').style.display='none'">✕</span>
-            <div class="countdown" id="countdownText">You can close this ad in 15 seconds</div>
-            <video src="video.mp4" autoplay muted playsinline controls style="width:100%"></video>
-            <button class="install-btn" id="installAppBtn">📲 Install App</button>
-        </div>
-    </div>
 
     <header id="main-header">
         <div class="logo">Hansitha Style</div>
@@ -253,29 +220,20 @@
             deferredPrompt = e;
         });
 
-        document.getElementById('installAppBtn').addEventListener('click', () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    deferredPrompt = null;
-                });
-            } else {
-                window.location.href = 'https://johnjohnjohn1434-ops.github.io/Photo-prompts/';
-            }
-        });
-
-        // Countdown Logic
-        let timeLeft = 15;
-        const timer = setInterval(() => {
-            timeLeft--;
-            if (timeLeft > 0) {
-                document.getElementById('countdownText').innerText = `You can close this ad in ${timeLeft} seconds`;
-            } else {
-                clearInterval(timer);
-                document.getElementById('countdownText').innerText = "You can now close this ad";
-                document.getElementById('closePopup').style.display = 'block';
-            }
-        }, 1000);
+        // Retaining the event listener logic safely in case the app invokes installation elsewhere
+        const installBtn = document.getElementById('installAppBtn');
+        if (installBtn) {
+            installBtn.addEventListener('click', () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        deferredPrompt = null;
+                    });
+                } else {
+                    window.location.href = 'https://johnjohnjohn1434-ops.github.io/Photo-prompts/';
+                }
+            });
+        }
 
         const firebaseConfig = {
           apiKey: "AIzaSyBJgk2EzELMAeW0dhw2hyTIxtp6f7Tbo8M",
@@ -319,18 +277,8 @@
             grid.style.display = 'block'; 
             grid.innerHTML = `
                 <div class="error-state" style="margin: 40px auto;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="2" y1="2" x2="22" y2="22"></line>
-                        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
-                        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
-                        <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
-                        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
-                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
-                    </svg>
-                    <h3>Connection Error</h3>
-                    <p>Please check your internet connection.</p>
-                    <button class="refresh-btn" onclick="window.location.reload()">Refresh Page</button>
+                    <h3>Network Connection Error</h3>
+                    <p>Please check your internet connection</p>
                 </div>
             `;
         }
@@ -358,7 +306,12 @@
             const grid = document.getElementById('galleryGrid');
             grid.innerHTML = '';
             if(items.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:var(--gray-text); padding:40px 0;">Connection Error<br>Please check your internet.</p>';
+                grid.innerHTML = `
+                    <div class="error-state" style="margin: 40px auto;">
+                        <h3>Network Connection Error</h3>
+                        <p>Please check your internet connection</p>
+                    </div>
+                `;
                 return;
             }
             items.forEach(item => {
@@ -449,44 +402,11 @@
         fetchStyles();
     </script>
     <script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js");
-  });
-}
-</script>
-    <script>
-fetch("ads.json")
-.then(res => res.json())
-.then(ad => {
-    if (!ad.active) {
-        document.getElementById("popupOverlay").style.display = "none";
-        return;
-    }
-
-    document.querySelector("#popupOverlay video").src = ad.video;
-    document.querySelector("#popupOverlay video").load();
-
-    document.getElementById("installAppBtn").onclick = () => {
-        window.open(ad.installLink, "_blank");
-    };
-
-    let time = ad.duration;
-    document.getElementById("countdownText").innerText =
-        `You can close this ad in ${time} seconds`;
-
-    const t = setInterval(() => {
-        time--;
-        document.getElementById("countdownText").innerText =
-            `You can close this ad in ${time} seconds`;
-
-        if (time <= 0) {
-            clearInterval(t);
-            document.getElementById("closePopup").style.display = "block";
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("./service-worker.js");
+            });
         }
-    }, 1000);
-});
-</script>
-    <script src="ads.js"></script>
+    </script>
 </body>
 </html>
