@@ -455,6 +455,38 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+    <script>
+fetch("ads.json")
+.then(res => res.json())
+.then(ad => {
+    if (!ad.active) {
+        document.getElementById("popupOverlay").style.display = "none";
+        return;
+    }
+
+    document.querySelector("#popupOverlay video").src = ad.video;
+    document.querySelector("#popupOverlay video").load();
+
+    document.getElementById("installAppBtn").onclick = () => {
+        window.open(ad.installLink, "_blank");
+    };
+
+    let time = ad.duration;
+    document.getElementById("countdownText").innerText =
+        `You can close this ad in ${time} seconds`;
+
+    const t = setInterval(() => {
+        time--;
+        document.getElementById("countdownText").innerText =
+            `You can close this ad in ${time} seconds`;
+
+        if (time <= 0) {
+            clearInterval(t);
+            document.getElementById("closePopup").style.display = "block";
+        }
+    }, 1000);
+});
+</script>
     <script src="ads.js"></script>
 </body>
 </html>
