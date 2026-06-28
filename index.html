@@ -196,6 +196,9 @@
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Style name illa prompt search pannunga...">
         </div>
+        
+<button id="installAppBtn" style="display:none;margin:15px auto 0;padding:12px 24px;border:none;border-radius:30px;background:#4f46e5;color:#fff;font-weight:600;cursor:pointer;">⬇ Download App</button>
+
         <div class="categories">
             <button class="cat-btn active" onclick="filterCategory('All')">Home</button>
             <button class="cat-btn" onclick="filterCategory('Women')">Women</button>
@@ -218,6 +221,13 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
+            const b=document.getElementById('installAppBtn');
+            if(b) b.style.display='inline-block';
+        });
+        window.addEventListener('appinstalled',()=>{
+            const b=document.getElementById('installAppBtn');
+            if(b) b.style.display='none';
+            deferredPrompt=null;
         });
 
         // Retaining the event listener logic safely in case the app invokes installation elsewhere
@@ -226,8 +236,9 @@
             installBtn.addEventListener('click', () => {
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt.userChoice.then(() => {
                         deferredPrompt = null;
+                        installBtn.style.display='none';
                     });
                 } else {
                     window.location.href = 'https://johnjohnjohn1434-ops.github.io/Photo-prompts/';
