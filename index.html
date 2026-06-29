@@ -295,23 +295,31 @@
         }
 
         async function fetchStyles() {
-            showLoadingState(); 
+            showLoadingState();
+
+            if (!navigator.onLine) {
+                showNetworkError();
+                return;
+            }
+
             try {
                 const querySnapshot = await getDocs(collection(db, "styles"));
                 allStyles = [];
                 querySnapshot.forEach((doc) => {
                     allStyles.push({ id: doc.id, ...doc.data() });
                 });
-                if(allStyles.length === 0) {
-                    showNetworkError();
-                } else {
-                    renderGallery(allStyles);
-                }
+                renderGallery(allStyles);
             } catch (error) {
                 console.error("Firebase fetch error:", error);
-                showNetworkError();
+                setTimeout(() => {
+                    if (navigator.onLine) fetchStyles();
+                    else showNetworkError();
+                },3000);
             }
         }
+
+        window.addEventListener("online", fetchStyles);
+        window.addEventListener("offline", showNetworkError);
 
         function renderGallery(items) {
             const grid = document.getElementById('galleryGrid');
@@ -319,8 +327,8 @@
             if(items.length === 0) {
                 grid.innerHTML = `
                     <div class="error-state" style="margin: 40px auto;">
-                        <h3>Network Connection Error</h3>
-                        <p>Please check your internet connection</p>
+                        <h3>No Prompts Found</h3>
+                        <p>Nothing available right now.</p>
                     </div>
                 `;
                 return;
